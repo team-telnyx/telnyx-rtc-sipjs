@@ -24,9 +24,14 @@ export class TelnyxCall extends EventEmitter {
     this._session.on("accepted", (data) => this.emit("accepted", data));
     this._session.on("connecting", () => this.emit("connecting"));
 
+    this._session.on("dtmf", (request, dtmf) => this.emit("dtmf", request, dtmf));
+    this._session.on("muted", (data) => this.emit("muted", data));
+    this._session.on("unmuted", (data) => this.emit("unmuted", data));
+
     this._session.on("rejected", (response, cause) => this.emit("rejected", response, cause));
     this._session.on("failed", (response, cause) => this.emit("failed", response, cause));
-    this._session.on("bye", (evt) => this.emit("bye", evt));
+    this._session.on("terminated", (message, cause) => this.emit("terminated", message, cause));
+    this._session.on("bye", () => this.emit("bye"));
   }
   // accept() {}
   // reject() {}
