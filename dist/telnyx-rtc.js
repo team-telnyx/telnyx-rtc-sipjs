@@ -54,135 +54,111 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
-
-	var _telnyxCall = __webpack_require__(1);
-
-	var _telnyxCall2 = _interopRequireDefault(_telnyxCall);
-
-	var _telnyxDevice = __webpack_require__(2);
-
-	var _telnyxDevice2 = _interopRequireDefault(_telnyxDevice);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-/***/ },
-/* 1 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var TelnyxCall = function () {
-	  function TelnyxCall() {
-	    _classCallCheck(this, TelnyxCall);
-	  }
-
-	  _createClass(TelnyxCall, [{
-	    key: "accept",
-	    value: function accept() {}
-	  }, {
-	    key: "reject",
-	    value: function reject() {}
-	  }, {
-	    key: "ignore",
-	    value: function ignore() {}
-	  }, {
-	    key: "disconnect",
-	    value: function disconnect() {}
-	  }, {
-	    key: "mute",
-	    value: function mute(isMute /*bool*/) {}
-	  }, {
-	    key: "isMuted",
-	    value: function isMuted() {}
-	  }, {
-	    key: "sendDigits",
-	    value: function sendDigits() {}
-	  }, {
-	    key: "status",
-	    value: function status() {}
-	  }]);
-
-	  return TelnyxCall;
-	}();
-
-/***/ },
-/* 2 */
-/***/ function(module, exports, __webpack_require__) {
-
 	/* WEBPACK VAR INJECTION */(function(SIP) {'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.TelnyxDevice = undefined;
+	exports.TelnyxCall = exports.TelnyxDevice = undefined;
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _telnyxCall = __webpack_require__(1);
-
-	var _telnyxCall2 = _interopRequireDefault(_telnyxCall);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	var _telnyxCall = __webpack_require__(37);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var TelnyxDevice = exports.TelnyxDevice = function () {
-	  function TelnyxDevice() {
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	// import * as SIP from '../node_modules/sip.js/src/SIP.js';
+	var EventEmitter = __webpack_require__(7);
+
+	var TelnyxDevice = function (_EventEmitter) {
+	  _inherits(TelnyxDevice, _EventEmitter);
+
+	  function TelnyxDevice(ServerConfig, client) {
 	    _classCallCheck(this, TelnyxDevice);
+
+	    var _this = _possibleConstructorReturn(this, (TelnyxDevice.__proto__ || Object.getPrototypeOf(TelnyxDevice)).call(this));
+
+	    _this.ServerConfig = ServerConfig;
+	    _this.client = client;
+	    _this.host = ServerConfig.host;
+	    _this.port = ServerConfig.port;
+	    _this._userAgent = null;
+	    return _this;
 	  }
 
 	  _createClass(TelnyxDevice, [{
 	    key: 'authorize',
 	    value: function authorize(accountName, authName, authPassword) {
-	      var uri = new SIP.URI("sip", accountName, this.host, this.port).toString();
-	      this.userAgent = new SIP.UA({
+	      var uri = new SIP.URI("sip", this.client.username, this.host, this.port).toString();
+
+	      this._userAgent = new SIP.UA({
 	        uri: uri,
-	        wsServers: ['wss://sip-ws.example.com'],
-	        authorizationUser: authName,
-	        password: authPassword
+	        wsServers: [this.ServerConfig.wsServer],
+	        authorizationUser: this.client.username,
+	        password: this.client.password,
+	        displayName: this.client.nickname,
+	        stunServers: [this.ServerConfig.stunServer],
+	        turnServers: [this.ServerConfig.turnServer],
+	        registrarServer: this.ServerConfig.registrarServer
 	      });
+	      this.emit('Authorized');
 	    }
 	  }, {
 	    key: 'startup',
-	    value: function startup() {}
+	    value: function startup() {
+	      this._userAgent.start();
+	      this.emit('Ready');
+	    }
 	  }, {
 	    key: 'shutdown',
-	    value: function shutdown() {}
-	  }, {
-	    key: 'connection',
-	    value: function connection() {}
+	    value: function shutdown() {
+	      this._userAgent.stop();
+	    }
+
+	    // connection() {}
+
 	  }, {
 	    key: 'initiateCall',
-	    value: function initiateCall() {
-	      return new _telnyxCall2.default();
+	    value: function initiateCall(phoneNumber) {
+	      this._activeCall = new _telnyxCall.TelnyxCall(this._userAgent, phoneNumber, this.host, this.port);
+	      return this._activeCall;
 	    }
 	  }, {
 	    key: 'activeCall',
-	    value: function activeCall() {}
+	    value: function activeCall() {
+	      return this._activeCall;
+	    }
 	  }, {
 	    key: 'status',
 	    value: function status() {}
+	  }, {
+	    key: 'isReady',
+	    value: function isReady() {
+	      return this.userAgent ? true : false;
+	    }
 	  }]);
 
 	  return TelnyxDevice;
-	}();
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
+	}(EventEmitter);
+
+	exports.TelnyxDevice = TelnyxDevice;
+	exports.TelnyxCall = _telnyxCall.TelnyxCall;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ },
-/* 3 */
+/* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	module.exports = __webpack_require__(4)(__webpack_require__(37));
+	module.exports = __webpack_require__(2)(__webpack_require__(35));
 
 /***/ },
-/* 4 */
+/* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -193,7 +169,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	module.exports = function (environment) {
 
-	  var pkg = __webpack_require__(5);
+	  var pkg = __webpack_require__(3);
 
 	  var SIP = Object.defineProperties({}, {
 	    version: {
@@ -208,38 +184,38 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  });
 
-	  __webpack_require__(6)(SIP, environment);
-	  SIP.LoggerFactory = __webpack_require__(7)(environment.console);
-	  SIP.EventEmitter = __webpack_require__(8)(environment.console);
-	  SIP.C = __webpack_require__(10)(SIP.name, SIP.version);
-	  SIP.Exceptions = __webpack_require__(11);
-	  SIP.Timers = __webpack_require__(12)(environment.timers);
+	  __webpack_require__(4)(SIP, environment);
+	  SIP.LoggerFactory = __webpack_require__(5)(environment.console);
+	  SIP.EventEmitter = __webpack_require__(6)(environment.console);
+	  SIP.C = __webpack_require__(8)(SIP.name, SIP.version);
+	  SIP.Exceptions = __webpack_require__(9);
+	  SIP.Timers = __webpack_require__(10)(environment.timers);
 	  SIP.Transport = environment.Transport(SIP, environment.WebSocket);
+	  __webpack_require__(11)(SIP);
+	  __webpack_require__(12)(SIP);
 	  __webpack_require__(13)(SIP);
 	  __webpack_require__(14)(SIP);
 	  __webpack_require__(15)(SIP);
 	  __webpack_require__(16)(SIP);
-	  __webpack_require__(17)(SIP);
 	  __webpack_require__(18)(SIP);
-	  __webpack_require__(20)(SIP);
+	  __webpack_require__(19)(SIP);
+	  SIP.MediaHandler = __webpack_require__(20)(SIP.EventEmitter);
 	  __webpack_require__(21)(SIP);
-	  SIP.MediaHandler = __webpack_require__(22)(SIP.EventEmitter);
-	  __webpack_require__(23)(SIP);
-	  __webpack_require__(24)(SIP);
-	  __webpack_require__(25)(SIP, environment);
-	  __webpack_require__(27)(SIP);
-	  SIP.WebRTC = __webpack_require__(28)(SIP, environment);
-	  __webpack_require__(31)(SIP, environment);
-	  SIP.Hacks = __webpack_require__(32)(SIP);
-	  __webpack_require__(33)(SIP);
-	  SIP.DigestAuthentication = __webpack_require__(34)(SIP.Utils);
-	  SIP.Grammar = __webpack_require__(35)(SIP);
+	  __webpack_require__(22)(SIP);
+	  __webpack_require__(23)(SIP, environment);
+	  __webpack_require__(25)(SIP);
+	  SIP.WebRTC = __webpack_require__(26)(SIP, environment);
+	  __webpack_require__(29)(SIP, environment);
+	  SIP.Hacks = __webpack_require__(30)(SIP);
+	  __webpack_require__(31)(SIP);
+	  SIP.DigestAuthentication = __webpack_require__(32)(SIP.Utils);
+	  SIP.Grammar = __webpack_require__(33)(SIP);
 
 	  return SIP;
 	};
 
 /***/ },
-/* 5 */
+/* 3 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -378,7 +354,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 6 */
+/* 4 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -894,7 +870,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 7 */
+/* 5 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -1019,12 +995,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 8 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var NodeEventEmitter = __webpack_require__(9).EventEmitter;
+	var NodeEventEmitter = __webpack_require__(7).EventEmitter;
 
 	module.exports = function (console) {
 
@@ -1062,7 +1038,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 9 */
+/* 7 */
 /***/ function(module, exports) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -1370,7 +1346,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 10 */
+/* 8 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -1575,7 +1551,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 11 */
+/* 9 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -1634,7 +1610,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 12 */
+/* 10 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -1679,7 +1655,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 13 */
+/* 11 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -1955,7 +1931,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 14 */
+/* 12 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -2502,7 +2478,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 15 */
+/* 13 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -2759,7 +2735,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 16 */
+/* 14 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -2866,7 +2842,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 17 */
+/* 15 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -3568,7 +3544,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 18 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -3587,7 +3563,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	module.exports = function (SIP) {
 
-	  var RequestSender = __webpack_require__(19)(SIP);
+	  var RequestSender = __webpack_require__(17)(SIP);
 
 	  var Dialog,
 	      C = {
@@ -3828,7 +3804,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 19 */
+/* 17 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -3922,7 +3898,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 20 */
+/* 18 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -4069,7 +4045,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 21 */
+/* 19 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -4358,7 +4334,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 22 */
+/* 20 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -4407,7 +4383,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 23 */
+/* 21 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -4511,7 +4487,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 24 */
+/* 22 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -4606,14 +4582,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 25 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
 	module.exports = function (SIP, environment) {
 
-	  var DTMF = __webpack_require__(26)(SIP);
+	  var DTMF = __webpack_require__(24)(SIP);
 
 	  var Session,
 	      InviteServerContext,
@@ -6761,7 +6737,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 26 */
+/* 24 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -6944,7 +6920,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 27 */
+/* 25 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -7274,7 +7250,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 28 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -7287,8 +7263,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  WebRTC = {};
 
-	  WebRTC.MediaHandler = __webpack_require__(29)(SIP);
-	  WebRTC.MediaStreamManager = __webpack_require__(30)(SIP, environment);
+	  WebRTC.MediaHandler = __webpack_require__(27)(SIP);
+	  WebRTC.MediaStreamManager = __webpack_require__(28)(SIP, environment);
 
 	  var _isSupported;
 
@@ -7317,7 +7293,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 29 */
+/* 27 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -7860,7 +7836,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 30 */
+/* 28 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -8023,7 +7999,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 31 */
+/* 29 */
 /***/ function(module, exports) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {"use strict";
@@ -9582,7 +9558,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 32 */
+/* 30 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -9700,7 +9676,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 33 */
+/* 31 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -9933,7 +9909,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 34 */
+/* 32 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -10102,12 +10078,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 35 */
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var Grammar = __webpack_require__(36);
+	var Grammar = __webpack_require__(34);
 
 	module.exports = function (SIP) {
 
@@ -10125,7 +10101,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 36 */
+/* 34 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -10946,7 +10922,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}();
 
 /***/ },
-/* 37 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {"use strict";
@@ -10969,7 +10945,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	module.exports = {
 	  WebSocket: toplevel.WebSocket,
-	  Transport: __webpack_require__(38),
+	  Transport: __webpack_require__(36),
 	  open: toplevel.open,
 	  Promise: toplevel.Promise,
 	  timers: toplevel,
@@ -10997,7 +10973,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 38 */
+/* 36 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -11373,6 +11349,131 @@ return /******/ (function(modules) { // webpackBootstrap
 	  Transport.C = C;
 	  return Transport;
 	};
+
+/***/ },
+/* 37 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(SIP) {'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var EventEmitter = __webpack_require__(7);
+
+	var inviteOptions = {
+	  media: {
+	    constraints: {
+	      audio: true,
+	      video: false
+	    },
+	    render: {}
+	  }
+	};
+
+	var TelnyxCall = exports.TelnyxCall = function (_EventEmitter) {
+	  _inherits(TelnyxCall, _EventEmitter);
+
+	  function TelnyxCall(UA, phoneNumber, host, port) {
+	    _classCallCheck(this, TelnyxCall);
+
+	    var _this = _possibleConstructorReturn(this, (TelnyxCall.__proto__ || Object.getPrototypeOf(TelnyxCall)).call(this));
+
+	    _this.host = host;
+	    _this.port = port;
+	    _this._mute = false;
+	    _this._status = 'starting';
+
+	    // scheme, user, host, port, parameters, headers
+	    _this._session = UA.invite(new SIP.URI("sip", phoneNumber, _this.host, _this.port).toString(), inviteOptions);
+	    // listen to SIP.js events, use our own
+	    // EventEmitter to emit custom events
+	    _this._session.on("connecting", function () {
+	      _this.emit("connecting");_this._status = 'initiating';
+	    });
+	    _this._session.on("progress", function (response) {
+	      return _this.emit("progress", response);
+	    });
+	    _this._session.on("accepted", function (data) {
+	      _this.emit("accepted", data), _this._status = 'connected';
+	    });
+
+	    _this._session.on("dtmf", function (request, dtmf) {
+	      return _this.emit("dtmf", request, dtmf);
+	    });
+	    _this._session.on("muted", function (data) {
+	      return _this.emit("muted", data);
+	    });
+	    _this._session.on("unmuted", function (data) {
+	      return _this.emit("unmuted", data);
+	    });
+
+	    _this._session.on("rejected", function (response, cause) {
+	      _this.emit("rejected", response, cause);_this._status = 'ended';
+	    });
+	    _this._session.on("failed", function (response, cause) {
+	      _this.emit("failed", response, cause);_this._status = 'ended';
+	    });
+	    _this._session.on("terminated", function (message, cause) {
+	      _this.emit("terminated", message, cause);_this._status = 'ended';
+	    });
+	    _this._session.on("bye", function () {
+	      _this.emit("bye");_this._status = 'ended';
+	    });
+	    return _this;
+	  }
+	  // accept() {}
+	  // reject() {}
+	  // ignore() {}
+
+	  _createClass(TelnyxCall, [{
+	    key: 'disconnect',
+	    value: function disconnect() {
+	      if (this._status === 'connected') {
+	        this._session.bye();
+	      } else if (this._status === 'initiating') {
+	        this._session.cancel();
+	      }
+	    }
+	  }, {
+	    key: 'mute',
+	    value: function mute(isMute /*bool*/) {
+	      this._mute = isMute;
+	      if (this._mute) {
+	        this._session.mute();
+	      } else {
+	        this._session.unmute();
+	      }
+	    }
+	  }, {
+	    key: 'isMuted',
+	    value: function isMuted() {
+	      return this._mute;
+	    }
+	  }, {
+	    key: 'sendDigits',
+	    value: function sendDigits(digits) {
+	      this._session.dtmf(digits);
+	    }
+	  }, {
+	    key: 'status',
+	    value: function status() {
+	      return this._status;
+	    }
+	  }]);
+
+	  return TelnyxCall;
+	}(EventEmitter);
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }
 /******/ ])
