@@ -18,7 +18,9 @@ export class TelnyxCall extends EventEmitter {
     this.port = port;
     this._mute = false;
     this._status = 'starting';
+    this.UA = UA;
 
+    this.UA.start();
     // scheme, user, host, port, parameters, headers
     this._session = UA.invite(new SIP.URI("sip", phoneNumber, this.host, this.port).toString(), inviteOptions);
     // listen to SIP.js events, use our own
@@ -47,6 +49,7 @@ export class TelnyxCall extends EventEmitter {
     } else if (this._status === 'initiating') {
       this._session.cancel();
     }
+    this.UA.stop();
   }
 
   mute(isMute /*bool*/) {

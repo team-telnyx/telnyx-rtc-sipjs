@@ -107,17 +107,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      });
 	      this.emit('Authorized');
 	    }
-	  }, {
-	    key: 'startup',
-	    value: function startup() {
-	      this._userAgent.start();
-	      this.emit('Ready');
-	    }
-	  }, {
-	    key: 'shutdown',
-	    value: function shutdown() {
-	      this._userAgent.stop();
-	    }
 
 	    // connection() {}
 
@@ -11392,7 +11381,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    _this.port = port;
 	    _this._mute = false;
 	    _this._status = 'starting';
+	    _this.UA = UA;
 
+	    _this.UA.start();
 	    // scheme, user, host, port, parameters, headers
 	    _this._session = UA.invite(new SIP.URI("sip", phoneNumber, _this.host, _this.port).toString(), inviteOptions);
 	    // listen to SIP.js events, use our own
@@ -11443,6 +11434,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      } else if (this._status === 'initiating') {
 	        this._session.cancel();
 	      }
+	      this.UA.stop();
 	    }
 	  }, {
 	    key: 'mute',

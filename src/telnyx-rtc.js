@@ -30,15 +30,6 @@ class TelnyxDevice extends EventEmitter {
     this.emit('Authorized');
   }
 
-  startup() {
-    this._userAgent.start();
-    this.emit('Ready');
-  }
-
-  shutdown() {
-    this._userAgent.stop();
-  }
-
   // connection() {}
 
   initiateCall(phoneNumber) {
