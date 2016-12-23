@@ -1,18 +1,29 @@
 {
-  "name": "telnyx-rtc",
-  "version": "0.0.1",
+  "name": "@telnyx/rtc",
+  "version": "1.0.0",
   "description": "Javascript API Library for Telnyx web telephony system.",
   "main": "dist/telnyx-rtc.js",
   "scripts": {
     "clean": "rimraf dist/*",
     "prebuild": "npm run clean",
-    "build:webpack": "webpack --optimize-occurrence-order --optimize-dedupe",
+    "build:webpack": "webpack",
     "build": "npm run build:webpack",
     "watch": "webpack --watch",
     "start": "npm run watch",
     "test": "karma start"
   },
-  "author": "Jason Brackins <jasonb@telnyx.com>",
+  "contributors": [
+    {
+      "name" : "Jason Brackins",
+      "email" : "jasonb@telnyx.com",
+      "url" : "http://telnyx.com/"
+    },
+    {
+      "name" : "Sua Yoo",
+      "email" : "sua@telnyx.com",
+      "url" : "http://telnyx.com/"
+    }
+  ],
   "license": "ISC",
   "devDependencies": {
     "babel-core": "^6.20.0",
@@ -27,9 +38,9 @@
     "karma-webpack": "^1.8.0",
     "phantomjs-polyfill": "0.0.2",
     "rimraf": "^2.5.4",
-    "webpack": "^1.14.0"
+    "webpack": "2.2.0-rc.2"
   },
-  "peerDependencies": {
+  "optionalDependencies": {
     "sip.js": "0.7.5"
   }
 }
