@@ -1,8 +1,11 @@
 {
   "name": "@telnyx/rtc",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Javascript API Library for Telnyx web telephony system.",
   "main": "dist/telnyx-rtc.js",
+  "files": [
+    "dist/"
+  ],
   "scripts": {
     "clean": "rimraf dist/*",
     "prebuild": "npm run clean",

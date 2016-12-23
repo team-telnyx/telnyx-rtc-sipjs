@@ -1,4 +1,5 @@
 // import * as SIP from '../node_modules/sip.js/src/SIP.js';
+const SIP = require('sip.js');
 const EventEmitter = require('events');
 
 import { TelnyxCall } from './lib/telnyx-call';
