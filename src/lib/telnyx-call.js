@@ -34,21 +34,35 @@ export class TelnyxCall extends EventEmitter {
     this._session.on("muted", (data) => this.emit("muted", data));
     this._session.on("unmuted", (data) => this.emit("unmuted", data));
 
+    this._session.on("cancel", ()  => {this.emit("cancel"); this._status = 'ended'});
+    this._session.on("refer", (callback, response, newSession)  => {this.emit("rejected");});
+    this._session.on("replaced", (newSession)  => {this.emit("rejected", newSession);});
+
     this._session.on("rejected", (response, cause)  => {this.emit("rejected", response, cause); this._status = 'ended'});
     this._session.on("failed", (response, cause)    => {this.emit("failed", response, cause); this._status = 'ended'});
-    this._session.on("terminated", (message, cause) => {this.emit("terminated", message, cause); this._status = 'ended'});
+    this._session.on("terminated", (message, cause) => {this.emit("terminated", message, cause); this._status = 'ended';});
     this._session.on("bye", () => {this.emit("bye"); this._status = 'ended'});
   }
   // accept() {}
   // reject() {}
   // ignore() {}
 
+  isInitiating() {
+    return this._status === 'initiating';
+  }
+  isConnected() {
+    return this._status === 'connected';
+  }
+  isEnded() {
+    return this._status === 'ended';
+  }
+
   disconnect() {
-    if(this._status === 'connected') {
-      this._session.bye();
-    } else if (this._status === 'initiating') {
-      this._session.cancel();
-    }
+    console.log("TELNYXRTC Terminating");
+    this._session.terminate();
+  }
+
+  shutdown() {
     this.UA.stop();
   }
 

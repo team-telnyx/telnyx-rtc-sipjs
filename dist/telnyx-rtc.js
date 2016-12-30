@@ -488,6 +488,16 @@ var TelnyxCall = exports.TelnyxCall = function (_EventEmitter) {
       return _this.emit("unmuted", data);
     });
 
+    _this._session.on("cancel", function () {
+      _this.emit("cancel");_this._status = 'ended';
+    });
+    _this._session.on("refer", function (callback, response, newSession) {
+      _this.emit("rejected");
+    });
+    _this._session.on("replaced", function (newSession) {
+      _this.emit("rejected", newSession);
+    });
+
     _this._session.on("rejected", function (response, cause) {
       _this.emit("rejected", response, cause);_this._status = 'ended';
     });
@@ -507,13 +517,29 @@ var TelnyxCall = exports.TelnyxCall = function (_EventEmitter) {
   // ignore() {}
 
   _createClass(TelnyxCall, [{
+    key: 'isInitiating',
+    value: function isInitiating() {
+      return this._status === 'initiating';
+    }
+  }, {
+    key: 'isConnected',
+    value: function isConnected() {
+      return this._status === 'connected';
+    }
+  }, {
+    key: 'isEnded',
+    value: function isEnded() {
+      return this._status === 'ended';
+    }
+  }, {
     key: 'disconnect',
     value: function disconnect() {
-      if (this._status === 'connected') {
-        this._session.bye();
-      } else if (this._status === 'initiating') {
-        this._session.cancel();
-      }
+      console.log("TELNYXRTC Terminating");
+      this._session.terminate();
+    }
+  }, {
+    key: 'shutdown',
+    value: function shutdown() {
       this.UA.stop();
     }
   }, {

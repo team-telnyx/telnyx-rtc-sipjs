@@ -1,6 +1,6 @@
 {
   "name": "@telnyx/rtc",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Javascript API Library for Telnyx web telephony system.",
   "main": "dist/telnyx-rtc.js",
   "files": [
@@ -44,6 +44,7 @@
     "webpack": "2.2.0-rc.2"
   },
   "optionalDependencies": {
-    "sip.js": "0.7.5"
+    "sip.js": "0.7.5",
+    "@telnyx/rtc-mocks": "^1.0.2"
   }
 }
