@@ -1,42 +1,81 @@
-import { TelnyxDevice } from "./telnyx-rtc";
+import {TelnyxDevice} from "./telnyx-rtc";
+import EventEmitter from 'es6-event-emitter';
 
-describe('telnyx device', () => {
-  let SIP;
+describe("telnyx device", () => {
+  let suite = {};
+
+  class URI { toString() {return 'sipURI'; } };
+  class UA {
+    start() {}
+    invite() { return new EventEmitter(); }
+  };
 
   beforeEach(() => {
-    SIP = jasmine.createSpyObj('SIP', ['URI', 'UA']);
-    window.SIP = SIP; // Stick on window to mirror how webpack loads the lib
+
+    TelnyxDevice.prototype._getSIP = function () {
+      this.SIP = {
+        URI: URI,
+        UA: UA
+      }
+    };
+    suite.config = {
+      host: "foo.com",
+      port: "8000",
+      wsServers: "WSservers",
+      username: "username",
+      password: "password",
+      stunServers: "stun",
+      turnServers: "turn",
+      registarServer: "registar"
+    };
   });
 
-  afterEach(() => {
-    SIP = null;
-    window.SIP = null;
+  describe("constructor", () => {
+    it("loads", () => {
+      let deviceConstructor = () => new TelnyxDevice(suite.config);
+      expect(deviceConstructor).not.toThrow();
+    });
+
+    it("requires a config object", () => {
+      let deviceConstructor = () => new TelnyxDevice();
+      expect(deviceConstructor).toThrow();
+      deviceConstructor = () => new TelnyxDevice("string");
+      expect(deviceConstructor).toThrow();
+    });
+
+    it("requires 'host' config option", () => {
+      delete(suite.config.host);
+      let deviceConstructor = () => new TelnyxDevice(suite.config);
+      expect(deviceConstructor).toThrowError(TypeError);
+    });
+
+    it("requires 'port' config option", () => {
+      delete(suite.config.port);
+      let deviceConstructor = () => new TelnyxDevice(suite.config);
+      expect(deviceConstructor).toThrowError(TypeError);
+    });
   });
 
 
-
-  it('loads', () => {
-    let device = new TelnyxDevice();
-    expect(true).toBe(true);
-  });
-
-  it('authorizes', (done) => {
-    let device = new TelnyxDevice('http://testhost.com', 1111);
-    device.on('Authorized', () => {
+  it("authorizes", (done) => {
+    let device = new TelnyxDevice(suite.config);
+    device.on("Authorized", () => {
       done();
     });
-    device.authorize('testacct', 'testauth', 'testpw');
+    device.authorize();
     expect(SIP.UA).toHaveBeenCalled();
-
   });
 
+  it("initiates a call", () => {
+    let tcall;
+    let device = new TelnyxDevice(suite.config);
+    device._userAgent = new UA();
+    let makeCall = () => {
+      tcall = device.initiateCall('1235556789');
+    }
 
-  it('starts up', (done) => {
-    let device = new TelnyxDevice('http://testhost.com', 1111);
-    device.on('Ready', () => {
-      done();
-    });
-    device.startup();
+    expect(makeCall).not.toThrow();
+    expect(typeof(tcall)).toBe('object');
   });
 
 });
