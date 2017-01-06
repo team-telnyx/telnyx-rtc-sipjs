@@ -1,40 +1,53 @@
-// import * as SIP from '../node_modules/sip.js/src/SIP.js';
-const SIP = require('sip.js');
-const EventEmitter = require('events');
-
+import SIP  from 'sip.js';
+import EventEmitter from 'es6-event-emitter';
 import { TelnyxCall } from './lib/telnyx-call';
 
 class TelnyxDevice extends EventEmitter {
 
-  constructor(ServerConfig, client) {
+  /**
+  *
+  */
+  constructor(config) {
     super();
-    this.ServerConfig = ServerConfig;
-    this.client = client;
-    this.host = ServerConfig.host;
-    this.port = ServerConfig.port;
+    if (!config || typeof(config) !== 'object') { throw new TypeError("TelnyxDevice: Missing config"); }
+    if (!config.host) { throw new TypeError("TelnyxDevice: Missing 'host' parameter"); }
+    if (!config.port) { throw new TypeError("TelnyxDevice: Missing 'port' parameter"); }
+
+    this.config = config;
+
+    this.host = config.host;
+    this.port = config.port;
+    this.wsServers = arrayify(config.wsServers);
+    this.username = config.username;
+    this.password = config.password;
+    this.displayName = config.displayName || config.username;
+    this.stunServers = arrayify(config.stunServers);
+    this.turnServers = arrayify(config.turnServers);
+    this.registrarServer = config.registrarServer;
+
     this._userAgent = null;
+    this._getSIP();
   }
 
-  authorize(accountName, authName, authPassword) {
-    let uri = new SIP.URI("sip", this.client.username, this.host, this.port).toString();
+  authorize() {
+    let uri = new this.SIP.URI("sip", this.username, this.host, this.port).toString();
 
-    this._userAgent = new SIP.UA({
+    this._userAgent = new this.SIP.UA({
       uri: uri,
-      wsServers: [this.ServerConfig.wsServer],
-      authorizationUser: this.client.username,
-      password: this.client.password,
-      displayName: this.client.nickname,
-      stunServers: [this.ServerConfig.stunServer],
-      turnServers: [this.ServerConfig.turnServer],
-      registrarServer: this.ServerConfig.registrarServer
+      wsServers: [this.wsServer],
+      authorizationUser: this.username,
+      password: this.password,
+      displayName: this.displayName,
+      stunServers: this.stunServers,
+      turnServers: this.turnServers,
+      registrarServer: this.registrarServer
     });
-    this.emit('Authorized');
+    this.trigger('Authorized');
   }
-
-  // connection() {}
 
   initiateCall(phoneNumber) {
-    this._activeCall = new TelnyxCall(this._userAgent, phoneNumber, this.host, this.port);
+    let uri = new this.SIP.URI("sip", phoneNumber, this.host, this.port).toString();
+    this._activeCall = new TelnyxCall(this._userAgent, uri);
     return this._activeCall;
   }
 
@@ -45,6 +58,25 @@ class TelnyxDevice extends EventEmitter {
   isReady() {
     return (this.userAgent) ? true : false;
   }
+
+  // store a local reference to SIP library for manual dependency injection in tests
+  _getSIP() {
+    this.SIP = SIP;
+  }
+
 }
+
+function arrayify(item) {
+  if (Array.isArray(item)) {
+    return item.slice(0); // Shallow Copy
+  } else if (typeof(item) === 'string') {
+    let arr = [];
+    arr.push(item);
+    return arr;
+  } else {
+    throw new TypeError (`TelnyxDevice: item should be an array or a string, it was ${typeof(item)}`);
+  }
+}
+
 
 export { TelnyxDevice, TelnyxCall };

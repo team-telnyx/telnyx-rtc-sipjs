@@ -17,17 +17,21 @@
   },
   "contributors": [
     {
-      "name" : "Jason Brackins",
-      "email" : "jasonb@telnyx.com",
-      "url" : "http://telnyx.com/"
+      "name": "Jason Brackins",
+      "email": "jasonb@telnyx.com",
+      "url": "http://telnyx.com/"
     },
     {
-      "name" : "Sua Yoo",
-      "email" : "sua@telnyx.com",
-      "url" : "http://telnyx.com/"
+      "name": "Sua Yoo",
+      "email": "sua@telnyx.com",
+      "url": "http://telnyx.com/"
     }
   ],
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/team-telnyx/telnyx-rtc"
+  },
   "devDependencies": {
     "babel-core": "^6.20.0",
     "babel-loader": "^6.2.9",
@@ -44,7 +48,16 @@
     "webpack": "2.2.0-rc.2"
   },
   "optionalDependencies": {
-    "sip.js": "0.7.5",
-    "@telnyx/rtc-mocks": "^1.0.2"
+    "@telnyx/rtc-mocks": "^1.0.2",
+    "sip.js": "0.7.5"
+  },
+  "engines": {
+    "node": ">=4.0.0"
+  },
+  "publishConfig": {
+    "registry": "https://artifactory.telnyx.com/api/npm/npm-telnyx/"
+  },
+  "dependencies": {
+    "es6-event-emitter": "^1.5.2"
   }
 }
