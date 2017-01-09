@@ -2,7 +2,7 @@
 # yarn lockfile v1
 
 
-"@telnyx/rtc-mocks@^1.0.2":
+"@telnyx/rtc-mocks@^1.0.3":
   version "1.0.3"
   resolved "https://artifactory.telnyx.com:443/api/npm/npm-telnyx/@telnyx/rtc-mocks/-/@telnyx/rtc-mocks-1.0.3.tgz#5d286a7c1a4be46a7861e80623e24815dcda51c2"
 

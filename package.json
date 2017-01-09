@@ -51,8 +51,8 @@
     "es6-event-emitter": "^1.5.2"
   },
   "optionalDependencies": {
-    "sip.js": "0.7.5",
-    "@telnyx/rtc-mocks": "^1.0.2"
+    "@telnyx/rtc-mocks": "^1.0.3",
+    "sip.js": "0.7.5"
   },
   "publishConfig": {
     "registry": "https://artifactory.telnyx.com/api/npm/npm-telnyx/"
