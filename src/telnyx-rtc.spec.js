@@ -1,3 +1,4 @@
+import SIP  from 'sip.js';
 import {TelnyxDevice} from "./telnyx-rtc";
 import EventEmitter from 'es6-event-emitter';
 
@@ -7,17 +8,21 @@ describe("telnyx device", () => {
   class URI { toString() {return 'sipURI'; } };
   class UA {
     start() {}
-    invite() { return new EventEmitter(); }
+    invite() {
+      let sess = new EventEmitter();
+      sess.mediaHandler = new EventEmitter();
+      return sess;
+    }
   };
 
   beforeEach(() => {
+    spyOn(SIP, "URI").and.callFake(() => {
+      return new URI();
+    });
+    spyOn(SIP, "UA").and.callFake(() => {
+      return new UA();
+    });
 
-    TelnyxDevice.prototype._getSIP = function () {
-      this.SIP = {
-        URI: URI,
-        UA: UA
-      }
-    };
     suite.config = {
       host: "foo.com",
       port: "8000",

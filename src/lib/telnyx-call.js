@@ -19,8 +19,8 @@ export class TelnyxCall extends EventEmitter {
     this.UA = UA;
 
     this.UA.start();
-    // scheme, user, host, port, parameters, headers
     this._session = UA.invite(inviteUri, inviteOptions);
+
     // listen to SIP.js events, use our own
     // EventEmitter to emit custom events
     this._session.on("connecting", () => {this.trigger("connecting"); this._status = 'initiating';});
@@ -40,6 +40,10 @@ export class TelnyxCall extends EventEmitter {
     this._session.on("failed", (response, cause)    => {this.trigger("failed", response, cause); this._status = 'ended'});
     this._session.on("terminated", (message, cause) => {this.trigger("terminated", message, cause); this._status = 'ended';});
     this._session.on("bye", () => {this.trigger("bye"); this._status = 'ended'});
+
+    this._session.mediaHandler.on("userMediaRequest", (constraints) => {this.trigger("userMediaRequest", constraints);});
+    this._session.mediaHandler.on("userMedia", (stream) => {this.trigger("userMedia", stream);});
+    this._session.mediaHandler.on("userMediaFailed", (error) => {this.trigger("userMediaFailed", error);});
   }
   // accept() {}
   // reject() {}
