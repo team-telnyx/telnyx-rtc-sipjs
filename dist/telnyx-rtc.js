@@ -578,74 +578,32 @@ var TelnyxCall = exports.TelnyxCall = function (_EventEmitter) {
 /***/ function(module, exports) {
 
 module.exports = {
-	"_args": [
-		[
-			{
-				"raw": "sip.js@~0.7.5",
-				"scope": null,
-				"escapedName": "sip.js",
-				"name": "sip.js",
-				"rawSpec": "~0.7.5",
-				"spec": ">=0.7.5 <0.8.0",
-				"type": "range"
-			},
-			"/Users/leff/telnyx/telnyx-rtc"
-		]
-	],
-	"_from": "sip.js@>=0.7.5 <0.8.0",
-	"_id": "sip.js@0.7.5",
-	"_inCache": true,
-	"_installable": true,
-	"_location": "/sip.js",
-	"_nodeVersion": "4.4.3",
-	"_npmOperationalInternal": {
-		"host": "packages-12-west.internal.npmjs.com",
-		"tmp": "tmp/sip.js-0.7.5.tgz_1461594418690_0.5839933124370873"
-	},
-	"_npmUser": {
-		"name": "josephfrazier",
-		"email": "1212jtraceur@gmail.com"
-	},
-	"_npmVersion": "2.15.1",
-	"_phantomChildren": {},
-	"_requested": {
-		"raw": "sip.js@~0.7.5",
-		"scope": null,
-		"escapedName": "sip.js",
-		"name": "sip.js",
-		"rawSpec": "~0.7.5",
-		"spec": ">=0.7.5 <0.8.0",
-		"type": "range"
-	},
-	"_requiredBy": [
-		"/"
-	],
-	"_resolved": "https://registry.npmjs.org/sip.js/-/sip.js-0.7.5.tgz",
-	"_shasum": "86ace7051594f91b4551bdb8120a16c44962d3a2",
-	"_shrinkwrap": null,
-	"_spec": "sip.js@~0.7.5",
-	"_where": "/Users/leff/telnyx/telnyx-rtc",
-	"author": {
-		"name": "OnSIP",
-		"email": "developer@onsip.com",
-		"url": "http://sipjs.com/authors/"
-	},
+	"name": "sip.js",
+	"title": "SIP.js",
+	"description": "A simple, intuitive, and powerful JavaScript signaling library",
+	"version": "0.7.5",
+	"main": "src/index.js",
 	"browser": {
 		"./src/environment.js": "./src/environment_browser.js"
 	},
-	"bugs": {
-		"url": "https://github.com/onsip/SIP.js/issues"
-	},
+	"homepage": "http://sipjs.com",
+	"author": "OnSIP <developer@onsip.com> (http://sipjs.com/authors/)",
 	"contributors": [
 		{
 			"url": "https://github.com/onsip/SIP.js/blob/master/THANKS.md"
 		}
 	],
-	"dependencies": {
-		"promiscuous": "^0.6.0",
-		"ws": "^0.6.4"
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/onsip/SIP.js.git"
 	},
-	"description": "A simple, intuitive, and powerful JavaScript signaling library",
+	"keywords": [
+		"sip",
+		"websocket",
+		"webrtc",
+		"library",
+		"javascript"
+	],
 	"devDependencies": {
 		"beefy": "^2.1.5",
 		"browserify": "^4.1.8",
@@ -660,56 +618,22 @@ module.exports = {
 		"grunt-trimtrailingspaces": "^0.4.0",
 		"pegjs": "^0.8.0"
 	},
-	"directories": {},
-	"dist": {
-		"shasum": "86ace7051594f91b4551bdb8120a16c44962d3a2",
-		"tarball": "https://registry.npmjs.org/sip.js/-/sip.js-0.7.5.tgz"
-	},
 	"engines": {
 		"node": ">=0.8"
 	},
-	"gitHead": "bae44bd0359f4d70ded309a32361f04a04e78d6e",
-	"homepage": "http://sipjs.com",
-	"keywords": [
-		"sip",
-		"websocket",
-		"webrtc",
-		"library",
-		"javascript"
-	],
 	"license": "MIT",
-	"main": "src/index.js",
-	"maintainers": [
-		{
-			"name": "egreen_onsip",
-			"email": "eric.green@onsip.com"
-		},
-		{
-			"name": "james-criscuolo",
-			"email": "james@onsip.com"
-		},
-		{
-			"name": "josephfrazier",
-			"email": "1212jtraceur@gmail.com"
-		}
-	],
-	"name": "sip.js",
-	"optionalDependencies": {
-		"promiscuous": "^0.6.0"
-	},
-	"readme": "ERROR: No README data found!",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/onsip/SIP.js.git"
-	},
 	"scripts": {
+		"repl": "beefy test/repl.js --open",
 		"build": "grunt build",
 		"prepublish": "cd src/Grammar && mkdir -p dist && pegjs --extra-options-file peg.json src/Grammar.pegjs dist/Grammar.js",
-		"repl": "beefy test/repl.js --open",
 		"test": "grunt travis --verbose"
 	},
-	"title": "SIP.js",
-	"version": "0.7.5"
+	"dependencies": {
+		"ws": "^0.6.4"
+	},
+	"optionalDependencies": {
+		"promiscuous": "^0.6.0"
+	}
 };
 
 /***/ },

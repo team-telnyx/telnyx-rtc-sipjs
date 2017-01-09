@@ -46,5 +46,8 @@
   "optionalDependencies": {
     "sip.js": "0.7.5",
     "@telnyx/rtc-mocks": "^1.0.2"
+  },
+  "publishConfig": {
+    "registry": "https://artifactory.telnyx.com/api/npm/npm-telnyx/"
   }
 }
