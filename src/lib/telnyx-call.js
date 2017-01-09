@@ -44,6 +44,20 @@ export class TelnyxCall extends EventEmitter {
     this._session.mediaHandler.on("userMediaRequest", (constraints) => {this.trigger("userMediaRequest", constraints);});
     this._session.mediaHandler.on("userMedia", (stream) => {this.trigger("userMedia", stream);});
     this._session.mediaHandler.on("userMediaFailed", (error) => {this.trigger("userMediaFailed", error);});
+    this._session.mediaHandler.on("iceGathering", () => {this.trigger("iceGathering");});
+    this._session.mediaHandler.on("iceCandidate", (candidate) => {this.trigger("iceCandidate", candidate);});
+    this._session.mediaHandler.on("iceGatheringComplete", () => {this.trigger("iceGatheringComplete");});
+    this._session.mediaHandler.on("iceConnection", () => {this.trigger("iceConnection");});
+    this._session.mediaHandler.on("iceConnectionChecking", () => {this.trigger("iceConnectionChecking");});
+    this._session.mediaHandler.on("iceConnectionConnected", () => {this.trigger("iceConnectionConnected");});
+    this._session.mediaHandler.on("iceConnectionCompleted", () => {this.trigger("iceConnectionCompleted");});
+    this._session.mediaHandler.on("iceConnectionFailed", () => {this.trigger("iceConnectionFailed");});
+    this._session.mediaHandler.on("iceConnectionDisconnected", () => {this.trigger("iceConnectionDisconnected");});
+    this._session.mediaHandler.on("iceConnectionClosed", () => {this.trigger("iceConnectionClosed");});
+    this._session.mediaHandler.on("getDescription", (sdpWrapper) => {this.trigger("getDescription", sdpWrapper);});
+    this._session.mediaHandler.on("setDescription", (sdpWrapper) => {this.trigger("setDescription", sdpWrapper);});
+    this._session.mediaHandler.on("dataChannel", (dataChannel) => {this.trigger("dataChannel", dataChannel);});
+    this._session.mediaHandler.on("addStream", (stream) => {this.trigger("addStream", stream);});
   }
   // accept() {}
   // reject() {}
