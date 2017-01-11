@@ -10,9 +10,6 @@ const inviteOptions = {
   }
 };
 
-/**
-* Class represeting an ongoing phone call.
-*/
 export class TelnyxCall extends EventEmitter {
 
   /**
@@ -22,7 +19,6 @@ export class TelnyxCall extends EventEmitter {
   * @param {String} inviteUri - A Properly formatted SIP.js invite URI (create with SIP.URI)
   *
   * @emits TelnyxCall#connecting
-  *
   */
   constructor(UA, inviteUri) {
     super();
@@ -34,43 +30,57 @@ export class TelnyxCall extends EventEmitter {
     this._session = UA.invite(inviteUri, inviteOptions);
 
     /**
-    * Connecting event
+    * connecting event:
     *
-    * @event TelnyCall#connecting
+    * Fired as the system starts to make the connection.
+    * This is after the userMedia (microphone) has been aquired.
+    *
+    * @event TelnyxCall#connecting
+    * @type {object}
     */
     this._session.on("connecting", () => {this.trigger("connecting"); this._status = 'initiating';});
 
     /**
-    * progress event
+    * progress event:
     *
-    * Usually fired twice during call intialization
+    * Usually fired twice during call intialization, once for TRYING and once for RINGING.
     *
-    * @event TelnyCall#progress
+    * @event TelnyxCall#progress
+    * @type {object}
     * @property {object} response - Details of the response
     */
     this._session.on("progress", (response) => this.trigger("progress", response));
 
     /**
-    * accepted event
+    * accepted event:
     *
-    * @event TelnyCall#accepted
+    * Fired when the call was accepted by the callee. The call is now connected.
+    *
+    * @event TelnyxCall#accepted
+    * @type {object}
     * @property {object} data - Details of the response
     */
     this._session.on("accepted", (data) => {this.trigger("accepted", data),  this._status = 'connected';});
 
     /**
-    * dtmf event
+    * dtmf event:
     *
-    * @event TelnyCall#dtmf
+    * Sent when the user has successfully sent a DTMF (keypad) signal.
+    *
+    * @event TelnyxCall#dtmf
+    * @type {object}
     * @property {object} request - Details of the request
     * @property {string} dtmf - the key(s) that were submitted
     */
     this._session.on("dtmf", (request, dtmf) => this.trigger("dtmf", request, dtmf));
 
     /**
-    * muted event
+    * muted event:
     *
-    * @event TelnyCall#muted
+    * Fired when the system has successfully responded to a mute request.
+    *
+    * @event TelnyxCall#muted
+    * @type {object}
     * @property {object} data - Details of the response
     */
     this._session.on("muted", (data) => this.trigger("muted", data));
@@ -78,22 +88,28 @@ export class TelnyxCall extends EventEmitter {
     /**
     * unmuted event
     *
-    * @event TelnyCall#unmuted
+    * Fired when the system has successfully responded to an unmute request.
+    *
+    * @event TelnyxCall#unmuted
+    * @type {object}
     * @property {object} data - Details of the response
     */
     this._session.on("unmuted", (data) => this.trigger("unmuted", data));
 
     /**
-    * cancel event
+    * cancel event:
     *
-    * @event TelnyCall#cancel
+    * Fired when the call was terminated before end to end connection was established,
+    * usually by the user's request.
+    *
+    * @event TelnyxCall#cancel
     */
     this._session.on("cancel", ()  => {this.trigger("cancel"); this._status = 'ended'});
 
     /**
-    * cancel event
+    * refer event
     *
-    * @event TelnyCall#refer
+    * @event TelnyxCall#refer
     * @property {function} callback
     * @property {object} response
     * @property {object} newSession
@@ -103,7 +119,7 @@ export class TelnyxCall extends EventEmitter {
     /**
     * replaced event
     *
-    * @event TelnyCall#replaced
+    * @event TelnyxCall#replaced
     * @property {object} newSession
     */
     this._session.on("replaced", (newSession)  => {this.trigger("rejected", newSession);});
@@ -111,7 +127,7 @@ export class TelnyxCall extends EventEmitter {
     /**
     * rejected event
     *
-    * @event TelnyCall#rejected
+    * @event TelnyxCall#rejected
     * @property {object} response
     * @property {object} cause
     */
@@ -120,7 +136,7 @@ export class TelnyxCall extends EventEmitter {
     /**
     * failed event
     *
-    * @event TelnyCall#failed
+    * @event TelnyxCall#failed
     * @property {object} response
     * @property {object} cause
     */
@@ -129,7 +145,7 @@ export class TelnyxCall extends EventEmitter {
     /**
     * terminated event
     *
-    * @event TelnyCall#terminated
+    * @event TelnyxCall#terminated
     * @property {object} response
     * @property {object} cause
     */
@@ -138,30 +154,44 @@ export class TelnyxCall extends EventEmitter {
     /**
     * bye event
     *
-    * @event TelnyCall#bye
+    * @event TelnyxCall#bye
     */
     this._session.on("bye", () => {this.trigger("bye"); this._status = 'ended'});
 
     /**
-    * userMediaRequest event
+    * userMediaRequest event:
     *
-    * @event TelnyCall#userMediaRequest
+    * Fired when the every time the system checks to see if it has microphone permission from the user.
+    * You can use this to detect when the browser's "Allow website to use microphone" dialog is open,
+    * but you will need to be somewhat careful. This event will fire even if the user already has
+    * given permission, then will be immediately followed by a {@link TelnyxCall#userMedia} event.
+    * If you wish to have your UI display some sort of "asking for permission" element, you may need to
+    * debounce this event; listening for {@link TelnyxCall#userMedia} to cancel your UI update.
+    *
+    * @event TelnyxCall#userMediaRequest
     * @property {object} constraints
     */
     this._session.mediaHandler.on("userMediaRequest", (constraints) => {this.trigger("userMediaRequest", constraints);});
 
     /**
-    * userMedia event
+    * userMedia event:
     *
-    * @event TelnyCall#userMedia
+    * Fired when the system has aquired permission to use the microphone. This will happen either
+    * immediately after {@link TelnyxCall#userMediaRequest} if the user has previously given permission
+    * or after the user approves the request.
+    *
+    * @event TelnyxCall#userMedia
     * @property {object} stream
     */
     this._session.mediaHandler.on("userMedia", (stream) => {this.trigger("userMedia", stream);});
 
     /**
-    * userMediaFailed event
+    * userMediaFailed event:
     *
-    * @event TelnyCall#userMediaFailed
+    * Fired when the user refuses permission to use the microphone. There is no way back from this
+    * except for the user to go into browser settings and remove the exception for your site.
+    *
+    * @event TelnyxCall#userMediaFailed
     * @property {object} error
     */
     this._session.mediaHandler.on("userMediaFailed", (error) => {this.trigger("userMediaFailed", error);});
@@ -169,14 +199,14 @@ export class TelnyxCall extends EventEmitter {
     /**
     * iceGathering event
     *
-    * @event TelnyCall#iceGathering
+    * @event TelnyxCall#iceGathering
     */
     this._session.mediaHandler.on("iceGathering", () => {this.trigger("iceGathering");});
 
     /**
     * iceCandidate event
     *
-    * @event TelnyCall#iceCandidate
+    * @event TelnyxCall#iceCandidate
     * @property {object} candidate
     */
     this._session.mediaHandler.on("iceCandidate", (candidate) => {this.trigger("iceCandidate", candidate);});
@@ -184,63 +214,63 @@ export class TelnyxCall extends EventEmitter {
     /**
     * iceGatheringComplete event
     *
-    * @event TelnyCall#iceGatheringComplete
+    * @event TelnyxCall#iceGatheringComplete
     */
     this._session.mediaHandler.on("iceGatheringComplete", () => {this.trigger("iceGatheringComplete");});
 
     /**
     * iceConnection event
     *
-    * @event TelnyCall#iceConnection
+    * @event TelnyxCall#iceConnection
     */
     this._session.mediaHandler.on("iceConnection", () => {this.trigger("iceConnection");});
 
     /**
     * iceConnectionChecking event
     *
-    * @event TelnyCall#iceConnectionChecking
+    * @event TelnyxCall#iceConnectionChecking
     */
     this._session.mediaHandler.on("iceConnectionChecking", () => {this.trigger("iceConnectionChecking");});
 
     /**
     * iceConnectionConnected event
     *
-    * @event TelnyCall#iceConnectionConnected
+    * @event TelnyxCall#iceConnectionConnected
     */
     this._session.mediaHandler.on("iceConnectionConnected", () => {this.trigger("iceConnectionConnected");});
 
     /**
     * iceConnectionCompleted event
     *
-    * @event TelnyCall#iceConnectionCompleted
+    * @event TelnyxCall#iceConnectionCompleted
     */
     this._session.mediaHandler.on("iceConnectionCompleted", () => {this.trigger("iceConnectionCompleted");});
 
     /**
     * iceConnectionFailed event
     *
-    * @event TelnyCall#iceConnectionFailed
+    * @event TelnyxCall#iceConnectionFailed
     */
     this._session.mediaHandler.on("iceConnectionFailed", () => {this.trigger("iceConnectionFailed");});
 
     /**
     * iceConnectionDisconnected event
     *
-    * @event TelnyCall#iceConnectionDisconnected
+    * @event TelnyxCall#iceConnectionDisconnected
     */
     this._session.mediaHandler.on("iceConnectionDisconnected", () => {this.trigger("iceConnectionDisconnected");});
 
     /**
     * iceConnectionClosed event
     *
-    * @event TelnyCall#iceConnectionClosed
+    * @event TelnyxCall#iceConnectionClosed
     */
     this._session.mediaHandler.on("iceConnectionClosed", () => {this.trigger("iceConnectionClosed");});
 
     /**
     * getDescription event
     *
-    * @event TelnyCall#getDescription
+    * @event TelnyxCall#getDescription
     * @property {object} sdpWrapper
     */
     this._session.mediaHandler.on("getDescription", (sdpWrapper) => {this.trigger("getDescription", sdpWrapper);});
@@ -248,7 +278,7 @@ export class TelnyxCall extends EventEmitter {
     /**
     * setDescription event
     *
-    * @event TelnyCall#setDescription
+    * @event TelnyxCall#setDescription
     * @property {object} sdpWrapper
     */
     this._session.mediaHandler.on("setDescription", (sdpWrapper) => {this.trigger("setDescription", sdpWrapper);});
@@ -256,7 +286,7 @@ export class TelnyxCall extends EventEmitter {
     /**
     * dataChannel event
     *
-    * @event TelnyCall#dataChannel
+    * @event TelnyxCall#dataChannel
     * @property {object} dataChannel
     */
     this._session.mediaHandler.on("dataChannel", (dataChannel) => {this.trigger("dataChannel", dataChannel);});
@@ -264,7 +294,7 @@ export class TelnyxCall extends EventEmitter {
     /**
     * addStream event
     *
-    * @event TelnyCall#addStream
+    * @event TelnyxCall#addStream
     * @property {object} stream
     */
     this._session.mediaHandler.on("addStream", (stream) => {this.trigger("addStream", stream);});

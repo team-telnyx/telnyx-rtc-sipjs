@@ -6,44 +6,43 @@
     -   [constructor](#constructor)
     -   [authorize](#authorize)
     -   [initiateCall](#initiatecall)
--   [TelnyxCall](#telnyxcall)
-    -   [constructor](#constructor-1)
-    -   [disconnect](#disconnect)
-    -   [shutdown](#shutdown)
-    -   [mute](#mute)
-    -   [isMuted](#ismuted)
-    -   [sendDigits](#senddigits)
-    -   [status](#status)
--   [TelnyCall#connecting](#telnycallconnecting)
--   [TelnyCall#progress](#telnycallprogress)
--   [TelnyCall#accepted](#telnycallaccepted)
--   [TelnyCall#dtmf](#telnycalldtmf)
--   [TelnyCall#muted](#telnycallmuted)
--   [TelnyCall#unmuted](#telnycallunmuted)
--   [TelnyCall#cancel](#telnycallcancel)
--   [TelnyCall#refer](#telnycallrefer)
--   [TelnyCall#replaced](#telnycallreplaced)
--   [TelnyCall#rejected](#telnycallrejected)
--   [TelnyCall#failed](#telnycallfailed)
--   [TelnyCall#terminated](#telnycallterminated)
--   [TelnyCall#bye](#telnycallbye)
--   [TelnyCall#userMediaRequest](#telnycallusermediarequest)
--   [TelnyCall#userMedia](#telnycallusermedia)
--   [TelnyCall#userMediaFailed](#telnycallusermediafailed)
--   [TelnyCall#iceGathering](#telnycallicegathering)
--   [TelnyCall#iceCandidate](#telnycallicecandidate)
--   [TelnyCall#iceGatheringComplete](#telnycallicegatheringcomplete)
--   [TelnyCall#iceConnection](#telnycalliceconnection)
--   [TelnyCall#iceConnectionChecking](#telnycalliceconnectionchecking)
--   [TelnyCall#iceConnectionConnected](#telnycalliceconnectionconnected)
--   [TelnyCall#iceConnectionCompleted](#telnycalliceconnectioncompleted)
--   [TelnyCall#iceConnectionFailed](#telnycalliceconnectionfailed)
--   [TelnyCall#iceConnectionDisconnected](#telnycalliceconnectiondisconnected)
--   [TelnyCall#iceConnectionClosed](#telnycalliceconnectionclosed)
--   [TelnyCall#getDescription](#telnycallgetdescription)
--   [TelnyCall#setDescription](#telnycallsetdescription)
--   [TelnyCall#dataChannel](#telnycalldatachannel)
--   [TelnyCall#addStream](#telnycalladdstream)
+-   [constructor](#constructor-1)
+-   [disconnect](#disconnect)
+-   [shutdown](#shutdown)
+-   [mute](#mute)
+-   [isMuted](#ismuted)
+-   [sendDigits](#senddigits)
+-   [status](#status)
+-   [TelnyxCall#connecting](#telnyxcallconnecting)
+-   [TelnyxCall#progress](#telnyxcallprogress)
+-   [TelnyxCall#accepted](#telnyxcallaccepted)
+-   [TelnyxCall#dtmf](#telnyxcalldtmf)
+-   [TelnyxCall#muted](#telnyxcallmuted)
+-   [TelnyxCall#unmuted](#telnyxcallunmuted)
+-   [TelnyxCall#cancel](#telnyxcallcancel)
+-   [TelnyxCall#refer](#telnyxcallrefer)
+-   [TelnyxCall#replaced](#telnyxcallreplaced)
+-   [TelnyxCall#rejected](#telnyxcallrejected)
+-   [TelnyxCall#failed](#telnyxcallfailed)
+-   [TelnyxCall#terminated](#telnyxcallterminated)
+-   [TelnyxCall#bye](#telnyxcallbye)
+-   [TelnyxCall#userMediaRequest](#telnyxcallusermediarequest)
+-   [TelnyxCall#userMedia](#telnyxcallusermedia)
+-   [TelnyxCall#userMediaFailed](#telnyxcallusermediafailed)
+-   [TelnyxCall#iceGathering](#telnyxcallicegathering)
+-   [TelnyxCall#iceCandidate](#telnyxcallicecandidate)
+-   [TelnyxCall#iceGatheringComplete](#telnyxcallicegatheringcomplete)
+-   [TelnyxCall#iceConnection](#telnyxcalliceconnection)
+-   [TelnyxCall#iceConnectionChecking](#telnyxcalliceconnectionchecking)
+-   [TelnyxCall#iceConnectionConnected](#telnyxcalliceconnectionconnected)
+-   [TelnyxCall#iceConnectionCompleted](#telnyxcalliceconnectioncompleted)
+-   [TelnyxCall#iceConnectionFailed](#telnyxcalliceconnectionfailed)
+-   [TelnyxCall#iceConnectionDisconnected](#telnyxcalliceconnectiondisconnected)
+-   [TelnyxCall#iceConnectionClosed](#telnyxcalliceconnectionclosed)
+-   [TelnyxCall#getDescription](#telnyxcallgetdescription)
+-   [TelnyxCall#setDescription](#telnyxcallsetdescription)
+-   [TelnyxCall#dataChannel](#telnyxcalldatachannel)
+-   [TelnyxCall#addStream](#telnyxcalladdstream)
 
 ## TelnyxDevice
 
@@ -73,13 +72,7 @@ Make a phone call
 
 Returns **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** TelnyxCall
 
-## TelnyxCall
-
-**Extends EventEmitter**
-
-Class represeting an ongoing phone call.
-
-### constructor
+## constructor
 
 Create a TelnyxCall. Normally created by TelnyxDevice.
 
@@ -88,15 +81,15 @@ Create a TelnyxCall. Normally created by TelnyxDevice.
 -   `UA` **UA** A SIP.js User Agent
 -   `inviteUri` **[String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** A Properly formatted SIP.js invite URI (create with SIP.URI)
 
-### disconnect
+## disconnect
 
 End the session
 
-### shutdown
+## shutdown
 
 Shutdown the connection to the WebRTC servers
 
-### mute
+## mute
 
 Toggle mute
 
@@ -104,13 +97,13 @@ Toggle mute
 
 -   `isMute` **[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** if true you want mute to be ON
 
-### isMuted
+## isMuted
 
 Current mute state
 
 Returns **[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** true if call is on mute
 
-### sendDigits
+## sendDigits
 
 Send phone keypad presses (DTMF tones)
 
@@ -120,66 +113,80 @@ Used after the call is in progress.
 
 -   `digits` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** a string containg digits 0-9, \*, #
 
-### status
+## status
 
 The "simple" status
 
 Returns **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** one of initiating, connected, ended
 
-## TelnyCall#connecting
+## TelnyxCall#connecting
 
-Connecting event
+connecting event:
 
-## TelnyCall#progress
+Fired as the system starts to make the connection.
+This is after the userMedia (microphone) has been aquired.
 
-progress event
+## TelnyxCall#progress
 
-Usually fired twice during call intialization
+progress event:
+
+Usually fired twice during call intialization, once for TRYING and once for RINGING.
 
 **Properties**
 
 -   `response` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** Details of the response
 
-## TelnyCall#accepted
+## TelnyxCall#accepted
 
 accepted event
+
+Fried when the call was accepted by the callee. The call is now connected.
 
 **Properties**
 
 -   `data` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** Details of the response
 
-## TelnyCall#dtmf
+## TelnyxCall#dtmf
 
-dtmf event
+dtmf event:
+
+Sent when the user has successfully sent a DTMF (keypad) signal.
 
 **Properties**
 
 -   `request` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** Details of the request
 -   `dtmf` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** the key(s) that were submitted
 
-## TelnyCall#muted
+## TelnyxCall#muted
 
-muted event
+muted event:
+
+Fired when the system has successfully responded to a mute request.
 
 **Properties**
 
 -   `data` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** Details of the response
 
-## TelnyCall#unmuted
+## TelnyxCall#unmuted
 
 unmuted event
 
+Fired when the system has successfully responded to an unmute request.
+
 **Properties**
 
 -   `data` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** Details of the response
 
-## TelnyCall#cancel
+## TelnyxCall#cancel
 
-cancel event
+cancel event:
 
-## TelnyCall#refer
+Fired when the call was terminated before end to end connection was established,
+usually by the user's request.
 
-cancel event
+## TelnyxCall#refer
+
+refer event
 
 **Properties**
 
@@ -187,7 +194,7 @@ cancel event
 -   `response` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** 
 -   `newSession` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** 
 
-## TelnyCall#replaced
+## TelnyxCall#replaced
 
 replaced event
 
@@ -195,7 +202,7 @@ replaced event
 
 -   `newSession` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** 
 
-## TelnyCall#rejected
+## TelnyxCall#rejected
 
 rejected event
 
@@ -204,7 +211,7 @@ rejected event
 -   `response` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** 
 -   `cause` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** 
 
-## TelnyCall#failed
+## TelnyxCall#failed
 
 failed event
 
@@ -213,7 +220,7 @@ failed event
 -   `response` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** 
 -   `cause` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** 
 
-## TelnyCall#terminated
+## TelnyxCall#terminated
 
 terminated event
 
@@ -222,39 +229,53 @@ terminated event
 -   `response` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** 
 -   `cause` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** 
 
-## TelnyCall#bye
+## TelnyxCall#bye
 
 bye event
 
-## TelnyCall#userMediaRequest
+## TelnyxCall#userMediaRequest
 
-userMediaRequest event
+userMediaRequest event:
+
+Fired when the every time the system checks to see if it has microphone permission from the user.
+You can use this to detect when the browser's "Allow website to use microphone" dialog is open,
+but you will need to be somewhat careful. This event will fire even if the user already has
+given permission, then will be immediately followed by a [TelnyxCall#userMedia](TelnyxCall#userMedia) event.
+If you wish to have your UI display some sort of "asking for permission" element, you may need to
+debounce this event; listening for [TelnyxCall#userMedia](TelnyxCall#userMedia) to cancel your UI update.
 
 **Properties**
 
 -   `constraints` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** 
 
-## TelnyCall#userMedia
+## TelnyxCall#userMedia
 
-userMedia event
+userMedia event:
+
+Fired when the system has aquired permission to use the microphone. This will happen either
+immediately after [TelnyxCall#userMediaRequest](TelnyxCall#userMediaRequest) if the user has previously given permission
+or after the user approves the request.
 
 **Properties**
 
 -   `stream` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** 
 
-## TelnyCall#userMediaFailed
+## TelnyxCall#userMediaFailed
 
-userMediaFailed event
+userMediaFailed event:
+
+Fired when the user refuses permission to use the microphone. There is no way back from this
+except for the user to go into browser settings and remove the exception for your site.
 
 **Properties**
 
 -   `error` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** 
 
-## TelnyCall#iceGathering
+## TelnyxCall#iceGathering
 
 iceGathering event
 
-## TelnyCall#iceCandidate
+## TelnyxCall#iceCandidate
 
 iceCandidate event
 
@@ -262,39 +283,39 @@ iceCandidate event
 
 -   `candidate` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** 
 
-## TelnyCall#iceGatheringComplete
+## TelnyxCall#iceGatheringComplete
 
 iceGatheringComplete event
 
-## TelnyCall#iceConnection
+## TelnyxCall#iceConnection
 
 iceConnection event
 
-## TelnyCall#iceConnectionChecking
+## TelnyxCall#iceConnectionChecking
 
 iceConnectionChecking event
 
-## TelnyCall#iceConnectionConnected
+## TelnyxCall#iceConnectionConnected
 
 iceConnectionConnected event
 
-## TelnyCall#iceConnectionCompleted
+## TelnyxCall#iceConnectionCompleted
 
 iceConnectionCompleted event
 
-## TelnyCall#iceConnectionFailed
+## TelnyxCall#iceConnectionFailed
 
 iceConnectionFailed event
 
-## TelnyCall#iceConnectionDisconnected
+## TelnyxCall#iceConnectionDisconnected
 
 iceConnectionDisconnected event
 
-## TelnyCall#iceConnectionClosed
+## TelnyxCall#iceConnectionClosed
 
 iceConnectionClosed event
 
-## TelnyCall#getDescription
+## TelnyxCall#getDescription
 
 getDescription event
 
@@ -302,7 +323,7 @@ getDescription event
 
 -   `sdpWrapper` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** 
 
-## TelnyCall#setDescription
+## TelnyxCall#setDescription
 
 setDescription event
 
@@ -310,7 +331,7 @@ setDescription event
 
 -   `sdpWrapper` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** 
 
-## TelnyCall#dataChannel
+## TelnyxCall#dataChannel
 
 dataChannel event
 
@@ -318,7 +339,7 @@ dataChannel event
 
 -   `dataChannel` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** 
 
-## TelnyCall#addStream
+## TelnyxCall#addStream
 
 addStream event
 
