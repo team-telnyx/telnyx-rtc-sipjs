@@ -7,6 +7,7 @@
     "dist/"
   ],
   "scripts": {
+    "docs": "documentation build 'src/telnyx-rtc.js' -f md  > docs/API.md",
     "clean": "rimraf dist/*",
     "prebuild": "npm run clean",
     "build:webpack": "webpack",

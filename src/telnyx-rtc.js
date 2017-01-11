@@ -2,10 +2,15 @@ import SIP  from 'sip.js';
 import EventEmitter from 'es6-event-emitter';
 import { TelnyxCall } from './lib/telnyx-call';
 
+/**
+* Represents the software phone running in a web browser or other context.
+*/
 class TelnyxDevice extends EventEmitter {
 
   /**
+  * Create a new TelnyxDevice.
   *
+  * @param {Object} config Configuration Object
   */
   constructor(config) {
     super();
@@ -28,6 +33,9 @@ class TelnyxDevice extends EventEmitter {
     this._userAgent = null;
   }
 
+  /**
+  * Connect to SIP server
+  */
   authorize() {
     let uri = new SIP.URI("sip", this.username, this.host, this.port).toString();
 
@@ -44,19 +52,27 @@ class TelnyxDevice extends EventEmitter {
     this.trigger('Authorized');
   }
 
+  /**
+  * Make a phone call
+  *
+  * @param {String} phoneNumber The desination phone number to connect to
+  * @return {Object} TelnyxCall
+  * @public
+  */
   initiateCall(phoneNumber) {
     let uri = new SIP.URI("sip", phoneNumber, this.host, this.port).toString();
     this._activeCall = new TelnyxCall(this._userAgent, uri);
     return this._activeCall;
   }
 
+
   activeCall() { return this._activeCall; }
 
-  status() {}
+  // status() {}
 
-  isReady() {
-    return (this.userAgent) ? true : false;
-  }
+  // isReady() {
+  //   return (this.userAgent) ? true : false;
+  // }
 }
 
 function arrayify(item) {
