@@ -76,17 +76,23 @@ Sometimes you need to test your UI without making phone calls all the time. See 
 
 When working on the package directly, please use [yarn](https://github.com/yarnpkg/yarn) instead of npm.
 
-```
+```shell
 $ yarn run build
 ```
 
 Use [@telnyx/npm-release](https://github.com/team-telnyx/npm-release) to manage versions.
 
+### Running tests
+
+```shell
+$ yarn run test
+```
+
 ### Generating Docs
 
 We use [jsdoc-to-markdown](https://github.com/jsdoc2md/jsdoc-to-markdown) to generate github friendly docs. 
 
-```
+```shell
 $ yarn run docs
 ```
 

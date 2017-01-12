@@ -8,16 +8,12 @@ module.exports = function(config) {
     browsers: ["PhantomJS"],
     frameworks: ["jasmine"],
 
-    files: [
-      "./node_modules/phantomjs-polyfill/bind-polyfill.js",
-      "./src/**/*.spec.js"
-    ],
-
     preprocessors: {
       "./src/**/*.js": ["webpack", "sourcemap"]
     },
 
     files: [
+      "./node_modules/phantomjs-polyfill/bind-polyfill.js",
       {pattern: "src/**/*.spec.js", watched: false}
     ],
 

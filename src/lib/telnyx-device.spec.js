@@ -1,12 +1,12 @@
 import SIP  from 'sip.js';
-import {TelnyxDevice} from "./telnyx-rtc";
+import { TelnyxDevice } from "./telnyx-device";
 import EventEmitter from 'es6-event-emitter';
 
 describe("telnyx device", () => {
   let suite = {};
 
   class URI { toString() {return 'sipURI'; } };
-  class UA {
+  class UA extends EventEmitter {
     start() {}
     invite() {
       let sess = new EventEmitter();
@@ -37,7 +37,7 @@ describe("telnyx device", () => {
 
   describe("constructor", () => {
     it("loads", () => {
-      let deviceConstructor = () => new TelnyxDevice(suite.config);
+      let deviceConstructor = () => { new TelnyxDevice(suite.config); }
       expect(deviceConstructor).not.toThrow();
     });
 
@@ -59,17 +59,13 @@ describe("telnyx device", () => {
       let deviceConstructor = () => new TelnyxDevice(suite.config);
       expect(deviceConstructor).toThrowError(TypeError);
     });
-  });
 
-
-  it("authorizes", (done) => {
-    let device = new TelnyxDevice(suite.config);
-    device.on("Authorized", () => {
-      done();
+    it("Creates a SIPjs User Agent", () => {
+      let device = new TelnyxDevice(suite.config);
+      expect(SIP.UA).toHaveBeenCalled();
     });
-    device.authorize();
-    expect(SIP.UA).toHaveBeenCalled();
   });
+
 
   it("initiates a call", () => {
     let tcall;
