@@ -26,7 +26,7 @@ require("script!../../node_modules/@telnyx/rtc/dist/telnyx-rtc.js");
 ```
 
 
-Then import `TelnyxDevice` in the module where you need it.
+Then import [TelnyxDevice](https://github.com/team-telnyx/telnyx-rtc/blob/master/docs/TelnyxDevice.md) in the module where you need it.
 
 ```javascript
 import { TelnyxDevice } from "@telnyx/rtc";
@@ -53,7 +53,6 @@ let config = {
 };
 
 let device = new TelnyxDevice(config);
-device.authorize();
 ```
 
 ### Example Phone Call
@@ -62,6 +61,7 @@ device.authorize();
 let activeCall = device.initiateCall("1235556789");
 
 activeCall.on("connecting", () => {console.log("it's connecting!")});
+activeCall.on("accepted", () => {console.log("We're on a phone call!")});
 ```
 
 See the [TelnyxDevice](https://github.com/team-telnyx/telnyx-rtc/blob/master/docs/TelnyxDevice.md) and [TelnyxCall](https://github.com/team-telnyx/telnyx-rtc/blob/master/docs/TelnyxCall.md) for more details.
