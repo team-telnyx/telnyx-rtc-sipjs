@@ -6,8 +6,11 @@
 
 * [TelnyxCall](#TelnyxCall)
     * [new TelnyxCall(UA, inviteUri)](#new_TelnyxCall_new)
+    * [.isInitiating()](#TelnyxCall+isInitiating) ⇒ <code>Boolean</code>
+    * [.isConnected()](#TelnyxCall+isConnected) ⇒ <code>Boolean</code>
+    * [.isEnded()](#TelnyxCall+isEnded) ⇒ <code>Boolean</code>
     * [.disconnect()](#TelnyxCall+disconnect)
-    * [.shutdown()](#TelnyxCall+shutdown)
+    * ~~[.shutdown()](#TelnyxCall+shutdown)~~
     * [.mute(isMute)](#TelnyxCall+mute)
     * [.isMuted()](#TelnyxCall+isMuted) ⇒ <code>boolean</code>
     * [.sendDigits(digits)](#TelnyxCall+sendDigits)
@@ -54,6 +57,27 @@ Create a TelnyxCall. Normally created by TelnyxDevice.
 | UA | <code>UA</code> | A SIP.js User Agent |
 | inviteUri | <code>String</code> | A Properly formatted SIP.js invite URI (create with SIP.URI) |
 
+<a name="TelnyxCall+isInitiating"></a>
+
+### telnyxCall.isInitiating() ⇒ <code>Boolean</code>
+Is the call still initiating
+
+**Kind**: instance method of <code>[TelnyxCall](#TelnyxCall)</code>  
+**Returns**: <code>Boolean</code> - isInitiating  
+<a name="TelnyxCall+isConnected"></a>
+
+### telnyxCall.isConnected() ⇒ <code>Boolean</code>
+Is the call has connected
+
+**Kind**: instance method of <code>[TelnyxCall](#TelnyxCall)</code>  
+**Returns**: <code>Boolean</code> - isConnected  
+<a name="TelnyxCall+isEnded"></a>
+
+### telnyxCall.isEnded() ⇒ <code>Boolean</code>
+Is the call has ended
+
+**Kind**: instance method of <code>[TelnyxCall](#TelnyxCall)</code>  
+**Returns**: <code>Boolean</code> - isEnded  
 <a name="TelnyxCall+disconnect"></a>
 
 ### telnyxCall.disconnect()
@@ -63,7 +87,9 @@ End the session
 **Emits**: <code>[terminated](#TelnyxCall+event_terminated)</code>  
 <a name="TelnyxCall+shutdown"></a>
 
-### telnyxCall.shutdown()
+### ~~telnyxCall.shutdown()~~
+***Deprecated***
+
 Shutdown the connection to the WebRTC servers
 
 **Kind**: instance method of <code>[TelnyxCall](#TelnyxCall)</code>  
@@ -102,7 +128,9 @@ Used after the call is in progress.
 <a name="TelnyxCall+status"></a>
 
 ### telnyxCall.status() ⇒ <code>string</code>
-The "simple" status
+The "simple" status.
+
+All of the many phases of the call boiled down into 3 states: Initiating, Connected and Ended.
 
 **Kind**: instance method of <code>[TelnyxCall](#TelnyxCall)</code>  
 **Returns**: <code>string</code> - one of initiating, connected, ended  

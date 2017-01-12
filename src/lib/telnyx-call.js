@@ -27,7 +27,7 @@ export class TelnyxCall extends EventEmitter {
     this.UA = UA;
 
     this.UA.start();
-    this._session = UA.invite(inviteUri, inviteOptions);
+    this._session = this.UA.invite(inviteUri, inviteOptions);
 
     /**
     * connecting event:
@@ -304,12 +304,29 @@ export class TelnyxCall extends EventEmitter {
   // reject() {}
   // ignore() {}
 
+  /**
+  * Is the call still initiating
+  *
+  * @return {Boolean} isInitiating
+  */
   isInitiating() {
     return this._status === 'initiating';
   }
+
+  /**
+  * Is the call has connected
+  *
+  * @return {Boolean} isConnected
+  */
   isConnected() {
     return this._status === 'connected';
   }
+
+  /**
+  * Is the call has ended
+  *
+  * @return {Boolean} isEnded
+  */
   isEnded() {
     return this._status === 'ended';
   }
@@ -325,6 +342,7 @@ export class TelnyxCall extends EventEmitter {
 
   /**
   * Shutdown the connection to the WebRTC servers
+  * @deprecated Please use TelnyxDevice.stopWS instead.
   */
   shutdown() {
     this.UA.stop();
@@ -366,7 +384,9 @@ export class TelnyxCall extends EventEmitter {
   }
 
   /**
-  * The "simple" status
+  * The "simple" status.
+  *
+  * All of the many phases of the call boiled down into 3 states: Initiating, Connected and Ended.
   *
   * @return {string} one of initiating, connected, ended
   */

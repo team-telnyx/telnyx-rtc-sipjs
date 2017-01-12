@@ -73,7 +73,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 111);
+/******/ 	return __webpack_require__(__webpack_require__.s = 112);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -88,7 +88,7 @@ module.exports = function(it){
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-var store      = __webpack_require__(33)('wks')
+var store      = __webpack_require__(32)('wks')
   , uid        = __webpack_require__(22)
   , Symbol     = __webpack_require__(2).Symbol
   , USE_SYMBOL = typeof Symbol == 'function';
@@ -114,7 +114,7 @@ if(typeof __g == 'number')__g = global; // eslint-disable-line no-undef
 /***/ function(module, exports, __webpack_require__) {
 
 var dP         = __webpack_require__(7)
-  , createDesc = __webpack_require__(30);
+  , createDesc = __webpack_require__(29);
 module.exports = __webpack_require__(5) ? function(object, key, value){
   return dP.f(object, key, createDesc(1, value));
 } : function(object, key, value){
@@ -430,7 +430,7 @@ module.exports = function(it, tag, stat){
 /* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
-var shared = __webpack_require__(33)('keys')
+var shared = __webpack_require__(32)('keys')
   , uid    = __webpack_require__(22);
 module.exports = function(key){
   return shared[key] || (shared[key] = uid(key));
@@ -442,7 +442,7 @@ module.exports = function(key){
 
 // to indexed object, toObject with fallback for non-array-like ES3 strings
 var IObject = __webpack_require__(15)
-  , defined = __webpack_require__(25);
+  , defined = __webpack_require__(24);
 module.exports = function(it){
   return IObject(defined(it));
 };
@@ -452,7 +452,7 @@ module.exports = function(it){
 /***/ function(module, exports, __webpack_require__) {
 
 // 7.1.15 ToLength
-var toInteger = __webpack_require__(34)
+var toInteger = __webpack_require__(33)
   , min       = Math.min;
 module.exports = function(it){
   return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
@@ -463,7 +463,7 @@ module.exports = function(it){
 /***/ function(module, exports, __webpack_require__) {
 
 // 7.1.13 ToObject(argument)
-var defined = __webpack_require__(25);
+var defined = __webpack_require__(24);
 module.exports = function(it){
   return Object(defined(it));
 };
@@ -480,6 +480,142 @@ module.exports = function(key){
 
 /***/ },
 /* 23 */
+/***/ function(module, exports) {
+
+module.exports = function(it, Constructor, name, forbiddenField){
+  if(!(it instanceof Constructor) || (forbiddenField !== undefined && forbiddenField in it)){
+    throw TypeError(name + ': incorrect invocation!');
+  } return it;
+};
+
+/***/ },
+/* 24 */
+/***/ function(module, exports) {
+
+// 7.2.1 RequireObjectCoercible(argument)
+module.exports = function(it){
+  if(it == undefined)throw TypeError("Can't call method on  " + it);
+  return it;
+};
+
+/***/ },
+/* 25 */
+/***/ function(module, exports, __webpack_require__) {
+
+var isObject = __webpack_require__(0)
+  , document = __webpack_require__(2).document
+  // in old IE typeof document.createElement is 'object'
+  , is = isObject(document) && isObject(document.createElement);
+module.exports = function(it){
+  return is ? document.createElement(it) : {};
+};
+
+/***/ },
+/* 26 */
+/***/ function(module, exports) {
+
+// IE 8- don't enum bug keys
+module.exports = (
+  'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'
+).split(',');
+
+/***/ },
+/* 27 */
+/***/ function(module, exports, __webpack_require__) {
+
+var ctx         = __webpack_require__(13)
+  , call        = __webpack_require__(56)
+  , isArrayIter = __webpack_require__(54)
+  , anObject    = __webpack_require__(4)
+  , toLength    = __webpack_require__(20)
+  , getIterFn   = __webpack_require__(70)
+  , BREAK       = {}
+  , RETURN      = {};
+var exports = module.exports = function(iterable, entries, fn, that, ITERATOR){
+  var iterFn = ITERATOR ? function(){ return iterable; } : getIterFn(iterable)
+    , f      = ctx(fn, that, entries ? 2 : 1)
+    , index  = 0
+    , length, step, iterator, result;
+  if(typeof iterFn != 'function')throw TypeError(iterable + ' is not iterable!');
+  // fast case for arrays with default iterator
+  if(isArrayIter(iterFn))for(length = toLength(iterable.length); length > index; index++){
+    result = entries ? f(anObject(step = iterable[index])[0], step[1]) : f(iterable[index]);
+    if(result === BREAK || result === RETURN)return result;
+  } else for(iterator = iterFn.call(iterable); !(step = iterator.next()).done; ){
+    result = call(iterator, f, step.value, entries);
+    if(result === BREAK || result === RETURN)return result;
+  }
+};
+exports.BREAK  = BREAK;
+exports.RETURN = RETURN;
+
+/***/ },
+/* 28 */
+/***/ function(module, exports, __webpack_require__) {
+
+// 19.1.2.14 / 15.2.3.14 Object.keys(O)
+var $keys       = __webpack_require__(66)
+  , enumBugKeys = __webpack_require__(26);
+
+module.exports = Object.keys || function keys(O){
+  return $keys(O, enumBugKeys);
+};
+
+/***/ },
+/* 29 */
+/***/ function(module, exports) {
+
+module.exports = function(bitmap, value){
+  return {
+    enumerable  : !(bitmap & 1),
+    configurable: !(bitmap & 2),
+    writable    : !(bitmap & 4),
+    value       : value
+  };
+};
+
+/***/ },
+/* 30 */
+/***/ function(module, exports, __webpack_require__) {
+
+var hide = __webpack_require__(3);
+module.exports = function(target, src, safe){
+  for(var key in src){
+    if(safe && target[key])target[key] = src[key];
+    else hide(target, key, src[key]);
+  } return target;
+};
+
+/***/ },
+/* 31 */
+/***/ function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(3);
+
+/***/ },
+/* 32 */
+/***/ function(module, exports, __webpack_require__) {
+
+var global = __webpack_require__(2)
+  , SHARED = '__core-js_shared__'
+  , store  = global[SHARED] || (global[SHARED] = {});
+module.exports = function(key){
+  return store[key] || (store[key] = {});
+};
+
+/***/ },
+/* 33 */
+/***/ function(module, exports) {
+
+// 7.1.4 ToInteger
+var ceil  = Math.ceil
+  , floor = Math.floor;
+module.exports = function(it){
+  return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
+};
+
+/***/ },
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -602,142 +738,6 @@ var Emitter = function () {
 exports.default = Emitter;
 
 /***/ },
-/* 24 */
-/***/ function(module, exports) {
-
-module.exports = function(it, Constructor, name, forbiddenField){
-  if(!(it instanceof Constructor) || (forbiddenField !== undefined && forbiddenField in it)){
-    throw TypeError(name + ': incorrect invocation!');
-  } return it;
-};
-
-/***/ },
-/* 25 */
-/***/ function(module, exports) {
-
-// 7.2.1 RequireObjectCoercible(argument)
-module.exports = function(it){
-  if(it == undefined)throw TypeError("Can't call method on  " + it);
-  return it;
-};
-
-/***/ },
-/* 26 */
-/***/ function(module, exports, __webpack_require__) {
-
-var isObject = __webpack_require__(0)
-  , document = __webpack_require__(2).document
-  // in old IE typeof document.createElement is 'object'
-  , is = isObject(document) && isObject(document.createElement);
-module.exports = function(it){
-  return is ? document.createElement(it) : {};
-};
-
-/***/ },
-/* 27 */
-/***/ function(module, exports) {
-
-// IE 8- don't enum bug keys
-module.exports = (
-  'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'
-).split(',');
-
-/***/ },
-/* 28 */
-/***/ function(module, exports, __webpack_require__) {
-
-var ctx         = __webpack_require__(13)
-  , call        = __webpack_require__(56)
-  , isArrayIter = __webpack_require__(54)
-  , anObject    = __webpack_require__(4)
-  , toLength    = __webpack_require__(20)
-  , getIterFn   = __webpack_require__(70)
-  , BREAK       = {}
-  , RETURN      = {};
-var exports = module.exports = function(iterable, entries, fn, that, ITERATOR){
-  var iterFn = ITERATOR ? function(){ return iterable; } : getIterFn(iterable)
-    , f      = ctx(fn, that, entries ? 2 : 1)
-    , index  = 0
-    , length, step, iterator, result;
-  if(typeof iterFn != 'function')throw TypeError(iterable + ' is not iterable!');
-  // fast case for arrays with default iterator
-  if(isArrayIter(iterFn))for(length = toLength(iterable.length); length > index; index++){
-    result = entries ? f(anObject(step = iterable[index])[0], step[1]) : f(iterable[index]);
-    if(result === BREAK || result === RETURN)return result;
-  } else for(iterator = iterFn.call(iterable); !(step = iterator.next()).done; ){
-    result = call(iterator, f, step.value, entries);
-    if(result === BREAK || result === RETURN)return result;
-  }
-};
-exports.BREAK  = BREAK;
-exports.RETURN = RETURN;
-
-/***/ },
-/* 29 */
-/***/ function(module, exports, __webpack_require__) {
-
-// 19.1.2.14 / 15.2.3.14 Object.keys(O)
-var $keys       = __webpack_require__(66)
-  , enumBugKeys = __webpack_require__(27);
-
-module.exports = Object.keys || function keys(O){
-  return $keys(O, enumBugKeys);
-};
-
-/***/ },
-/* 30 */
-/***/ function(module, exports) {
-
-module.exports = function(bitmap, value){
-  return {
-    enumerable  : !(bitmap & 1),
-    configurable: !(bitmap & 2),
-    writable    : !(bitmap & 4),
-    value       : value
-  };
-};
-
-/***/ },
-/* 31 */
-/***/ function(module, exports, __webpack_require__) {
-
-var hide = __webpack_require__(3);
-module.exports = function(target, src, safe){
-  for(var key in src){
-    if(safe && target[key])target[key] = src[key];
-    else hide(target, key, src[key]);
-  } return target;
-};
-
-/***/ },
-/* 32 */
-/***/ function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(3);
-
-/***/ },
-/* 33 */
-/***/ function(module, exports, __webpack_require__) {
-
-var global = __webpack_require__(2)
-  , SHARED = '__core-js_shared__'
-  , store  = global[SHARED] || (global[SHARED] = {});
-module.exports = function(key){
-  return store[key] || (store[key] = {});
-};
-
-/***/ },
-/* 34 */
-/***/ function(module, exports) {
-
-// 7.1.4 ToInteger
-var ceil  = Math.ceil
-  , floor = Math.floor;
-module.exports = function(it){
-  return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
-};
-
-/***/ },
 /* 35 */
 /***/ function(module, exports) {
 
@@ -772,11 +772,298 @@ module.exports = g;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.TelnyxDevice = undefined;
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _sip = __webpack_require__(111);
+
+var _sip2 = _interopRequireDefault(_sip);
+
+var _es6EventEmitter = __webpack_require__(34);
+
+var _es6EventEmitter2 = _interopRequireDefault(_es6EventEmitter);
+
+var _telnyxCall = __webpack_require__(37);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+/**
+* Represents the software phone running in a web browser or other context.
+*
+* @class
+*/
+var TelnyxDevice = function (_EventEmitter) {
+  _inherits(TelnyxDevice, _EventEmitter);
+
+  /**
+  * Create a new TelnyxDevice.
+  *
+  * @param {Object} config Configuration Object
+  * @param {String} config.host The host name or IP address of the SIP server
+  * @param {String} config.port The port of the SIP server
+  * @param {String} config.wsServers URI(s) of the WebSocket Servers. Format `ws://123.0.0.0:5066`. An array of strings is also accepted.
+  * @param {String} config.username The username for the SIP server
+  * @param {String} config.password The passweord for the SIP server
+  * @param {String} config.displayName The human readable name passed in the from field. Will be used for Caller ID
+  * @param {String} config.stunServers URI(s) for how to connect to the STUN servers. Format `stun:stun.telnyx.com:8000`. An array of strings is also accepted.
+  * @param {Object} config.turnServers Details for how to connect to the TURN servers. An array of objects is also accepted.
+  * @param {String} config.turnServers.urls URI(s) for the TURN server(s). Format `turn:123.0.0.0:8000?transport=tcp`. An array of strings is also accepted.
+  * @param {String} config.turnServers.username Username to authenticate on TURN server(s)
+  * @param {String} config.turnServers.password Password to authenticate on TURN server(s)
+  * @param {String} config.registrarServer URI for the registrar Server. Format `sip:123.0.0.0:5066`
+  */
+  function TelnyxDevice(config) {
+    _classCallCheck(this, TelnyxDevice);
+
+    var _this = _possibleConstructorReturn(this, (TelnyxDevice.__proto__ || Object.getPrototypeOf(TelnyxDevice)).call(this));
+
+    if (!config || (typeof config === 'undefined' ? 'undefined' : _typeof(config)) !== 'object') {
+      throw new TypeError("TelnyxDevice: Missing config");
+    }
+    if (!config.host) {
+      throw new TypeError("TelnyxDevice: Missing 'host' parameter");
+    }
+    if (!config.port) {
+      throw new TypeError("TelnyxDevice: Missing 'port' parameter");
+    }
+
+    _this.config = config;
+
+    _this.host = config.host;
+    _this.port = config.port;
+    _this.wsServers = arrayify(config.wsServers);
+    _this.username = config.username;
+    _this.password = config.password;
+    _this.displayName = config.displayName || config.username;
+    _this.stunServers = arrayify(config.stunServers);
+    _this.turnServers = config.turnServers;
+    _this.registrarServer = config.registrarServer;
+
+    _this._userAgent = null;
+
+    var uri = new _sip2.default.URI("sip", _this.username, _this.host, _this.port).toString();
+
+    _this._userAgent = new _sip2.default.UA({
+      uri: uri,
+      wsServers: _this.wsServers,
+      authorizationUser: _this.username,
+      password: _this.password,
+      displayName: _this.displayName,
+      stunServers: _this.stunServers,
+      turnServers: _this.turnServers,
+      registrarServer: _this.registrarServer
+    });
+
+    /**
+    * wsConnecting event
+    *
+    * Fired when the device attempts to connect to the WebSocket server.
+    * If the connection drops, the device will try to reconnect and this event will fire again.
+    *
+    * @event TelnyxDevice#wsConnecting
+    * @type {object}
+    * @property {number} attempts - the number of connection attempts that have been made
+    */
+    _this._userAgent.on("connecting", function (args) {
+      _this.trigger("wsConnecting", { attempts: args.attempts });
+    });
+
+    /**
+    * wsConnected event
+    *
+    * Fired when the WebSocket connection has been established.
+    *
+    * @event TelnyxDevice#wsConnected
+    */
+    _this._userAgent.on("connected", function () {
+      _this.trigger("wsConnected");
+    });
+
+    /**
+    * wsDisconnected event
+    *
+    * Fried when the WebSocket connection attempt fails.
+    *
+    * @event TelnyxDevice#wsDisconnected
+    */
+    _this._userAgent.on("disconnected", function () {
+      _this.trigger("wsDisconnected");
+    });
+
+    /**
+    * registered event
+    *
+    * Fired when a the device has been successfully registered to recieve calls.
+    *
+    * @event TelnyxDevice#registered
+    */
+    _this._userAgent.on("registered", function () {
+      _this.trigger("registered");
+    });
+
+    /**
+    * unregistered event
+    *
+    * Fired as the result of a call to `unregister()` or if a periodic re-registration fails.
+    *
+    * @event TelnyxDevice#unregistered
+    * @type {object}
+    * @property {object} cause - null if `unregister()` was called, otherwise see [SIPjs causes]{@link http://sipjs.com/api/0.7.0/causes/}
+    * @property {object} response - The SIP message which caused the failure, if it exists.
+    */
+    _this._userAgent.on("unregistered", function (response, cause) {
+      _this.trigger("unregistered", { cause: cause, response: response });
+    });
+
+    /**
+    * registrationFailed event
+    *
+    * Fired when a registration attepmt fails.
+    *
+    * @event TelnyxDevice#registrationFailed
+    * @type {object}
+    * @property {object} cause - see [SIPjs causes]{@link http://sipjs.com/api/0.7.0/causes/}
+    * @property {object} response - The SIP message which caused the failure, if it exists.
+    */
+    _this._userAgent.on("registrationFailed", function (cause, response) {
+      _this.trigger("registrationFailed", { cause: cause, response: response });
+    });
+
+    /**
+    * incommingInvite event
+    *
+    * Fired when the device recieves an INVITE request
+    * @event TelnyxDevice#invite
+    */
+    _this._userAgent.on("invite", function () {
+      _this.trigger("incommingInvite");
+    });
+
+    /**
+    * message event
+    *
+    * @event TelnyxDevice#message
+    * @type {object}
+    * @property {object} message - Contains the SIP message sent and server context necessary to receive and send replies.
+    */
+    _this._userAgent.on("message", function (message) {
+      _this.trigger("message", { message: message });
+    });
+
+    return _this;
+  }
+
+  /**
+  * @deprecated This method is no longer used. It will eventually be removed from the API.
+  */
+
+
+  _createClass(TelnyxDevice, [{
+    key: 'authorize',
+    value: function authorize() {}
+
+    /**
+    * Start the connection to the WebSocket server, and restore the previous state if stopped.
+    * You need to start the WebSocket connection before you can send or recieve calls. If you
+    * try to `initiateCall` without first starting the connection, it will be started for you,
+    * but it will not be stopped when the call is terminated.
+    */
+
+  }, {
+    key: 'startWS',
+    value: function startWS() {
+      this._userAgent.start();
+    }
+
+    /**
+    * Stop the connection to the WebSocket server, saving the state so it can be restored later
+    * (by `start`).
+    */
+
+  }, {
+    key: 'stopWS',
+    value: function stopWS() {
+      this._userAgent.stop();
+    }
+
+    ///**
+    //* Register the device to receive incoming calls.
+    //*/
+    // register() {
+
+    // }
+
+    // unregister() {
+
+    // }
+
+    /**
+    * Make a phone call
+    *
+    * @param {String} phoneNumber The desination phone number to connect to. Just digits, no punctuation. Example "12065551111".
+    * @return {TelnyxCall} activeCall Keep an eye on the call's state by listening to events emitted by activeCall
+    */
+
+  }, {
+    key: 'initiateCall',
+    value: function initiateCall(phoneNumber) {
+      var uri = new _sip2.default.URI("sip", phoneNumber, this.host, this.port).toString();
+      this._activeCall = new _telnyxCall.TelnyxCall(this._userAgent, uri);
+      return this._activeCall;
+    }
+
+    /**
+    * Get a reference to the call currently in progress
+    *
+    * @return {TelnyxCall} activeCall Keep an eye on the call's state by listening to events emitted by activeCall
+    */
+
+  }, {
+    key: 'activeCall',
+    value: function activeCall() {
+      return this._activeCall;
+    }
+  }]);
+
+  return TelnyxDevice;
+}(_es6EventEmitter2.default);
+
+function arrayify(item) {
+  if (Array.isArray(item)) {
+    return item.slice(0); // Shallow Copy
+  } else {
+    var arr = [];
+    arr.push(item);
+    return arr;
+  }
+}
+
+exports.TelnyxDevice = TelnyxDevice;
+
+/***/ },
+/* 37 */
+/***/ function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 exports.TelnyxCall = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _es6EventEmitter = __webpack_require__(23);
+var _es6EventEmitter = __webpack_require__(34);
 
 var _es6EventEmitter2 = _interopRequireDefault(_es6EventEmitter);
 
@@ -819,7 +1106,7 @@ var TelnyxCall = exports.TelnyxCall = function (_EventEmitter) {
     _this.UA = UA;
 
     _this.UA.start();
-    _this._session = UA.invite(inviteUri, inviteOptions);
+    _this._session = _this.UA.invite(inviteUri, inviteOptions);
 
     /**
     * connecting event:
@@ -1157,16 +1444,37 @@ var TelnyxCall = exports.TelnyxCall = function (_EventEmitter) {
   // reject() {}
   // ignore() {}
 
+  /**
+  * Is the call still initiating
+  *
+  * @return {Boolean} isInitiating
+  */
+
+
   _createClass(TelnyxCall, [{
     key: 'isInitiating',
     value: function isInitiating() {
       return this._status === 'initiating';
     }
+
+    /**
+    * Is the call has connected
+    *
+    * @return {Boolean} isConnected
+    */
+
   }, {
     key: 'isConnected',
     value: function isConnected() {
       return this._status === 'connected';
     }
+
+    /**
+    * Is the call has ended
+    *
+    * @return {Boolean} isEnded
+    */
+
   }, {
     key: 'isEnded',
     value: function isEnded() {
@@ -1187,6 +1495,7 @@ var TelnyxCall = exports.TelnyxCall = function (_EventEmitter) {
 
     /**
     * Shutdown the connection to the WebRTC servers
+    * @deprecated Please use TelnyxDevice.stopWS instead.
     */
 
   }, {
@@ -1240,7 +1549,9 @@ var TelnyxCall = exports.TelnyxCall = function (_EventEmitter) {
     }
 
     /**
-    * The "simple" status
+    * The "simple" status.
+    *
+    * All of the many phases of the call boiled down into 3 states: Initiating, Connected and Ended.
     *
     * @return {string} one of initiating, connected, ended
     */
@@ -1254,15 +1565,6 @@ var TelnyxCall = exports.TelnyxCall = function (_EventEmitter) {
 
   return TelnyxCall;
 }(_es6EventEmitter2.default);
-
-/***/ },
-/* 37 */
-/***/ function(module, exports, __webpack_require__) {
-
-"use strict";
-
-module.exports = __webpack_require__(94)(__webpack_require__(110));
-
 
 /***/ },
 /* 38 */
@@ -1450,12 +1752,12 @@ module.exports = function(it){
 
 "use strict";
 
-var redefineAll       = __webpack_require__(31)
+var redefineAll       = __webpack_require__(30)
   , getWeak           = __webpack_require__(16).getWeak
   , anObject          = __webpack_require__(4)
   , isObject          = __webpack_require__(0)
-  , anInstance        = __webpack_require__(24)
-  , forOf             = __webpack_require__(28)
+  , anInstance        = __webpack_require__(23)
+  , forOf             = __webpack_require__(27)
   , createArrayMethod = __webpack_require__(11)
   , $has              = __webpack_require__(6)
   , arrayFind         = createArrayMethod(5)
@@ -1544,9 +1846,9 @@ var global         = __webpack_require__(2)
   , meta           = __webpack_require__(16)
   , fails          = __webpack_require__(8)
   , hide           = __webpack_require__(3)
-  , redefineAll    = __webpack_require__(31)
-  , forOf          = __webpack_require__(28)
-  , anInstance     = __webpack_require__(24)
+  , redefineAll    = __webpack_require__(30)
+  , forOf          = __webpack_require__(27)
+  , anInstance     = __webpack_require__(23)
   , isObject       = __webpack_require__(0)
   , setToStringTag = __webpack_require__(17)
   , dP             = __webpack_require__(7).f
@@ -1609,7 +1911,7 @@ module.exports = __webpack_require__(2).document && document.documentElement;
 /***/ function(module, exports, __webpack_require__) {
 
 module.exports = !__webpack_require__(5) && !__webpack_require__(8)(function(){
-  return Object.defineProperty(__webpack_require__(26)('div'), 'a', {get: function(){ return 7; }}).a != 7;
+  return Object.defineProperty(__webpack_require__(25)('div'), 'a', {get: function(){ return 7; }}).a != 7;
 });
 
 /***/ },
@@ -1659,7 +1961,7 @@ module.exports = function(iterator, fn, value, entries){
 "use strict";
 
 var create         = __webpack_require__(62)
-  , descriptor     = __webpack_require__(30)
+  , descriptor     = __webpack_require__(29)
   , setToStringTag = __webpack_require__(17)
   , IteratorPrototype = {};
 
@@ -1679,7 +1981,7 @@ module.exports = function(Constructor, NAME, next){
 
 var LIBRARY        = __webpack_require__(60)
   , $export        = __webpack_require__(14)
-  , redefine       = __webpack_require__(32)
+  , redefine       = __webpack_require__(31)
   , hide           = __webpack_require__(3)
   , has            = __webpack_require__(6)
   , Iterators      = __webpack_require__(9)
@@ -1768,7 +2070,7 @@ module.exports = true;
 "use strict";
 
 // 19.1.2.1 Object.assign(target, source, ...)
-var getKeys  = __webpack_require__(29)
+var getKeys  = __webpack_require__(28)
   , gOPS     = __webpack_require__(64)
   , pIE      = __webpack_require__(67)
   , toObject = __webpack_require__(21)
@@ -1807,7 +2109,7 @@ module.exports = !$assign || __webpack_require__(8)(function(){
 // 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
 var anObject    = __webpack_require__(4)
   , dPs         = __webpack_require__(63)
-  , enumBugKeys = __webpack_require__(27)
+  , enumBugKeys = __webpack_require__(26)
   , IE_PROTO    = __webpack_require__(18)('IE_PROTO')
   , Empty       = function(){ /* empty */ }
   , PROTOTYPE   = 'prototype';
@@ -1815,7 +2117,7 @@ var anObject    = __webpack_require__(4)
 // Create object with fake `null` prototype: use iframe Object with cleared prototype
 var createDict = function(){
   // Thrash, waste and sodomy: IE GC bug
-  var iframe = __webpack_require__(26)('iframe')
+  var iframe = __webpack_require__(25)('iframe')
     , i      = enumBugKeys.length
     , lt     = '<'
     , gt     = '>'
@@ -1853,7 +2155,7 @@ module.exports = Object.create || function create(O, Properties){
 
 var dP       = __webpack_require__(7)
   , anObject = __webpack_require__(4)
-  , getKeys  = __webpack_require__(29);
+  , getKeys  = __webpack_require__(28);
 
 module.exports = __webpack_require__(5) ? Object.defineProperties : function defineProperties(O, Properties){
   anObject(O);
@@ -1921,7 +2223,7 @@ exports.f = {}.propertyIsEnumerable;
 /* 68 */
 /***/ function(module, exports, __webpack_require__) {
 
-var toInteger = __webpack_require__(34)
+var toInteger = __webpack_require__(33)
   , max       = Math.max
   , min       = Math.min;
 module.exports = function(index, length){
@@ -2020,7 +2322,7 @@ $export($export.S + $export.F * !__webpack_require__(5), 'Object', {defineProper
 "use strict";
 
 var each         = __webpack_require__(11)(0)
-  , redefine     = __webpack_require__(32)
+  , redefine     = __webpack_require__(31)
   , meta         = __webpack_require__(16)
   , assign       = __webpack_require__(61)
   , weak         = __webpack_require__(50)
@@ -13964,142 +14266,24 @@ module.exports = {
 
 "use strict";
 
+module.exports = __webpack_require__(94)(__webpack_require__(110));
+
+
+/***/ },
+/* 112 */
+/***/ function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.TelnyxCall = exports.TelnyxDevice = undefined;
+exports.TelnyxDevice = undefined;
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _telnyxDevice = __webpack_require__(36);
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _sip = __webpack_require__(37);
-
-var _sip2 = _interopRequireDefault(_sip);
-
-var _es6EventEmitter = __webpack_require__(23);
-
-var _es6EventEmitter2 = _interopRequireDefault(_es6EventEmitter);
-
-var _telnyxCall = __webpack_require__(36);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/**
-* Represents the software phone running in a web browser or other context.
-*/
-var TelnyxDevice = function (_EventEmitter) {
-  _inherits(TelnyxDevice, _EventEmitter);
-
-  /**
-  * Create a new TelnyxDevice.
-  *
-  * @param {Object} config Configuration Object
-  */
-  function TelnyxDevice(config) {
-    _classCallCheck(this, TelnyxDevice);
-
-    var _this = _possibleConstructorReturn(this, (TelnyxDevice.__proto__ || Object.getPrototypeOf(TelnyxDevice)).call(this));
-
-    if (!config || (typeof config === 'undefined' ? 'undefined' : _typeof(config)) !== 'object') {
-      throw new TypeError("TelnyxDevice: Missing config");
-    }
-    if (!config.host) {
-      throw new TypeError("TelnyxDevice: Missing 'host' parameter");
-    }
-    if (!config.port) {
-      throw new TypeError("TelnyxDevice: Missing 'port' parameter");
-    }
-
-    _this.config = config;
-
-    _this.host = config.host;
-    _this.port = config.port;
-    _this.wsServers = arrayify(config.wsServers);
-    _this.username = config.username;
-    _this.password = config.password;
-    _this.displayName = config.displayName || config.username;
-    _this.stunServers = arrayify(config.stunServers);
-    _this.turnServers = config.turnServers;
-    _this.registrarServer = config.registrarServer;
-
-    _this._userAgent = null;
-    return _this;
-  }
-
-  /**
-  * Connect to SIP server
-  */
-
-
-  _createClass(TelnyxDevice, [{
-    key: 'authorize',
-    value: function authorize() {
-      var uri = new _sip2.default.URI("sip", this.username, this.host, this.port).toString();
-
-      this._userAgent = new _sip2.default.UA({
-        uri: uri,
-        wsServers: this.wsServers,
-        authorizationUser: this.username,
-        password: this.password,
-        displayName: this.displayName,
-        stunServers: this.stunServers,
-        turnServers: this.turnServers,
-        registrarServer: this.registrarServer
-      });
-      this.trigger('Authorized');
-    }
-
-    /**
-    * Make a phone call
-    *
-    * @param {String} phoneNumber The desination phone number to connect to
-    * @return {Object} TelnyxCall
-    */
-
-  }, {
-    key: 'initiateCall',
-    value: function initiateCall(phoneNumber) {
-      var uri = new _sip2.default.URI("sip", phoneNumber, this.host, this.port).toString();
-      this._activeCall = new _telnyxCall.TelnyxCall(this._userAgent, uri);
-      return this._activeCall;
-    }
-  }, {
-    key: 'activeCall',
-    value: function activeCall() {
-      return this._activeCall;
-    }
-
-    // status() {}
-
-    // isReady() {
-    //   return (this.userAgent) ? true : false;
-    // }
-
-  }]);
-
-  return TelnyxDevice;
-}(_es6EventEmitter2.default);
-
-function arrayify(item) {
-  if (Array.isArray(item)) {
-    return item.slice(0); // Shallow Copy
-  } else {
-    var arr = [];
-    arr.push(item);
-    return arr;
-  }
-}
-
-exports.TelnyxDevice = TelnyxDevice;
-exports.TelnyxCall = _telnyxCall.TelnyxCall;
+exports.TelnyxDevice = _telnyxDevice.TelnyxDevice;
 
 /***/ }
 /******/ ]);

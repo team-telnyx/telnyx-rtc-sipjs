@@ -7,7 +7,7 @@
     "dist/"
   ],
   "scripts": {
-    "docs": "jsdoc2md src/telnyx-rtc.js > docs/TelnyxDevice.md && jsdoc2md src/lib/telnyx-call.js > docs/TelnyxCall.md",
+    "docs": "jsdoc2md src/lib/telnyx-device.js > docs/TelnyxDevice.md && jsdoc2md src/lib/telnyx-call.js > docs/TelnyxCall.md",
     "clean": "rimraf dist/*",
     "prebuild": "npm run clean",
     "build:webpack": "webpack",
