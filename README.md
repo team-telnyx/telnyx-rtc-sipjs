@@ -64,7 +64,7 @@ let activeCall = device.initiateCall("1235556789");
 activeCall.on("connecting", () => {console.log("it's connecting!")});
 ```
 
-See the [API Docs](https://github.com/team-telnyx/telnyx-rtc/blob/master/docs/API.md) for more details.
+See the [TelnyxDevice](https://github.com/team-telnyx/telnyx-rtc/blob/master/docs/TelnyxDevice.md) and [TelnyxCall](https://github.com/team-telnyx/telnyx-rtc/blob/master/docs/TelnyxCall.md) for more details.
 
 ## Testing your UI
 
@@ -74,6 +74,8 @@ Sometimes you need to test your UI without making phone calls all the time. See 
 
 ## Building the package
 
+When working on the package directly, please use [yarn](https://github.com/yarnpkg/yarn) instead of npm.
+
 ```
 $ yarn run build
 ```
@@ -82,7 +84,8 @@ Use [@telnyx/npm-release](https://github.com/team-telnyx/npm-release) to manage 
 
 ### Generating Docs
 
-You'll need to install [documentationjs](https://github.com/documentationjs/documentation) globally (for now).
+We use [jsdoc-to-markdown](https://github.com/jsdoc2md/jsdoc-to-markdown) to generate github friendly docs. 
+
 ```
 $ yarn run docs
 ```

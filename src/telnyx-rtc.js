@@ -57,7 +57,6 @@ class TelnyxDevice extends EventEmitter {
   *
   * @param {String} phoneNumber The desination phone number to connect to
   * @return {Object} TelnyxCall
-  * @public
   */
   initiateCall(phoneNumber) {
     let uri = new SIP.URI("sip", phoneNumber, this.host, this.port).toString();
