@@ -995,21 +995,54 @@ var TelnyxDevice = function (_EventEmitter) {
       this._userAgent.stop();
     }
 
+    /**
+    * Status of the WebSocket connection
+    *
+    * @return {Boolean} isConnected `true` if the device is connected to the WebSocket server, `false` otherwise
+    */
+
+  }, {
+    key: 'isWSConnected',
+    value: function isWSConnected() {
+      return this._userAgent.isConnected();
+    }
+
     ///**
-    //* Register the device to receive incoming calls.
+    //* Register the device with the SIP server so that it can receive incoming calls.
+    //*
+    //* @param {Object} options
+    //* @param {String[]} options.extraHeaders SIP headers that will be added to each REGISTER request. Each header is string in the format `"X-Header-Name: Header-value"`.
+    //* @emits TelnyxDevice#registered
     //*/
-    // register() {
+    //register(options) {
+    //  this._userAgent.register(options);
+    //}
 
-    // }
+    ///**
+    //* Unregister the device from the SIP server; it will no longer recieve incoming calls.
+    //*
+    //* @param {Object} options
+    //* @param {Boolean} options.all [Optional] - if set & `true` it will unregister *all* bindings for the SIP user.
+    //* @param {String[]} options.extraHeaders SIP headers that will be added to each REGISTER request. Each header is string in the format `"X-Header-Name: Header-value"`.
+    //* @emits TelnyxDevice#unregistered
+    //*/
+    //unregister(options) {
+    //  this._userAgent.register(options);
+    //}
 
-    // unregister() {
-
-    // }
+    ///**
+    //* Status of SIP registration
+    //*
+    //* @return {Boolean} isRegistered `true` if the device is registered with the SIP Server, `false` otherwise
+    //*/
+    //isRegistered() {
+    //  return this._userAgent.isRegistered();
+    //}
 
     /**
     * Make a phone call
     *
-    * @param {String} phoneNumber The desination phone number to connect to. Just digits, no punctuation. Example "12065551111".
+    * @param {String} phoneNumber The desination phone number to connect to. Just digits, no punctuation. Example `"12065551111"`.
     * @return {TelnyxCall} activeCall Keep an eye on the call's state by listening to events emitted by activeCall
     */
 
