@@ -15,20 +15,48 @@ export class TelnyxCall extends EventEmitter {
   /**
   * Create a TelnyxCall. Normally created by TelnyxDevice.
   *
+  * Once a call is created, you can either make a call with `makeCall()`
+  * or set yourself up to recieve an incoming call with `incomingCall()`
+  *
   * @param {UA} UA - A SIP.js User Agent
   * @param {String} inviteUri - A Properly formatted SIP.js invite URI (create with SIP.URI)
   *
   * @emits TelnyxCall#connecting
   */
-  constructor(UA, inviteUri) {
+  constructor(UA) {
     super();
     this._mute = false;
     this._status = 'starting';
     this.UA = UA;
 
     this.UA.start();
-    this._session = this.UA.invite(inviteUri, inviteOptions);
+  }
 
+  /**
+  * Make a call to a phone number
+  *
+  * @param {URI} inviteUri - A SIP.js URI that includes the phone number to connect to
+  */
+  makeCall(inviteUri) {
+    this._callType = 'outgoing';
+    this._session = this.UA.invite(inviteUri, inviteOptions);
+    this._attatchSessionEvents();
+  }
+
+  /**
+  * Set up to handle an incoming call.
+  * The calling function will then be able to accept or reject the call.
+  *
+  * @param {Session} session - A SIP.js Session, specifically of the SIP.ServerContext type
+  */
+  incomingCall(session) {
+    this._callType = 'incoming';
+    this._session = session;
+    this._attatchSessionEvents();
+  }
+
+
+  _attatchSessionEvents() {
     /**
     * connecting event:
     *
@@ -300,9 +328,23 @@ export class TelnyxCall extends EventEmitter {
     this._session.mediaHandler.on("addStream", (stream) => {this.trigger("addStream", stream);});
 
   }
-  // accept() {}
-  // reject() {}
-  // ignore() {}
+
+
+  accept() {
+    if (this._callType !== 'incoming') {
+      console.error("accept() method is only valid on incoming calls");
+      return;
+    }
+    this._session.accept();
+  }
+
+  reject() {
+    if (this._callType !== 'incoming') {
+      console.error("accept() method is only valid on incoming calls");
+      return;
+    }
+    this._session.reject();
+  }
 
   /**
   * Is the call still initiating

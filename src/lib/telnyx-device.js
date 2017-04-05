@@ -127,12 +127,17 @@ class TelnyxDevice extends EventEmitter {
     });
 
     /**
-    * incommingInvite event
+    * incomingInvite event
     *
     * Fired when the device recieves an INVITE request
     * @event TelnyxDevice#invite
+    * @type {Session}
     */
-    this._userAgent.on("invite", ()  => {this.trigger("incommingInvite");});
+    this._userAgent.on("invite", (session) => {
+      this._activeCall = new TelnyxCall(this._userAgent);
+      this._activeCall.incomingCall(session);
+      this.trigger("incomingInvite", {activeCall: this._activeCall});
+    });
 
     /**
     * message event
@@ -142,13 +147,6 @@ class TelnyxDevice extends EventEmitter {
     * @property {object} message - Contains the SIP message sent and server context necessary to receive and send replies.
     */
     this._userAgent.on("message", (message)  => {this.trigger("message", {message: message});});
-
-  }
-
-  /**
-  * @deprecated This method is no longer used. It will eventually be removed from the API.
-  */
-  authorize() {
 
   }
 
@@ -179,37 +177,37 @@ class TelnyxDevice extends EventEmitter {
     return this._userAgent.isConnected();
   }
 
-  ///**
-  //* Register the device with the SIP server so that it can receive incoming calls.
-  //*
-  //* @param {Object} options
-  //* @param {String[]} options.extraHeaders SIP headers that will be added to each REGISTER request. Each header is string in the format `"X-Header-Name: Header-value"`.
-  //* @emits TelnyxDevice#registered
-  //*/
-  //register(options) {
-  //  this._userAgent.register(options);
-  //}
+  /**
+  * Register the device with the SIP server so that it can receive incoming calls.
+  *
+  * @param {Object} options
+  * @param {String[]} options.extraHeaders SIP headers that will be added to each REGISTER request. Each header is string in the format `"X-Header-Name: Header-value"`.
+  * @emits TelnyxDevice#registered
+  */
+  register(options) {
+   this._userAgent.register(options);
+  }
 
-  ///**
-  //* Unregister the device from the SIP server; it will no longer recieve incoming calls.
-  //*
-  //* @param {Object} options
-  //* @param {Boolean} options.all [Optional] - if set & `true` it will unregister *all* bindings for the SIP user.
-  //* @param {String[]} options.extraHeaders SIP headers that will be added to each REGISTER request. Each header is string in the format `"X-Header-Name: Header-value"`.
-  //* @emits TelnyxDevice#unregistered
-  //*/
-  //unregister(options) {
-  //  this._userAgent.register(options);
-  //}
+  /**
+  * Unregister the device from the SIP server; it will no longer recieve incoming calls.
+  *
+  * @param {Object} options
+  * @param {Boolean} options.all [Optional] - if set & `true` it will unregister *all* bindings for the SIP user.
+  * @param {String[]} options.extraHeaders SIP headers that will be added to each REGISTER request. Each header is string in the format `"X-Header-Name: Header-value"`.
+  * @emits TelnyxDevice#unregistered
+  */
+  unregister(options) {
+   this._userAgent.register(options);
+  }
 
-  ///**
-  //* Status of SIP registration
-  //*
-  //* @return {Boolean} isRegistered `true` if the device is registered with the SIP Server, `false` otherwise
-  //*/
-  //isRegistered() {
-  //  return this._userAgent.isRegistered();
-  //}
+  /**
+  * Status of SIP registration
+  *
+  * @return {Boolean} isRegistered `true` if the device is registered with the SIP Server, `false` otherwise
+  */
+  isRegistered() {
+   return this._userAgent.isRegistered();
+  }
 
   /**
   * Make a phone call
@@ -219,7 +217,8 @@ class TelnyxDevice extends EventEmitter {
   */
   initiateCall(phoneNumber) {
     let uri = new SIP.URI("sip", phoneNumber, this.host, this.port).toString();
-    this._activeCall = new TelnyxCall(this._userAgent, uri);
+    this._activeCall = new TelnyxCall(this._userAgent);
+    this._activeCall.makeCall(uri);
     return this._activeCall;
   }
 

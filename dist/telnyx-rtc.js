@@ -939,13 +939,16 @@ var TelnyxDevice = function (_EventEmitter) {
     });
 
     /**
-    * incommingInvite event
+    * incomingInvite event
     *
     * Fired when the device recieves an INVITE request
     * @event TelnyxDevice#invite
+    * @type {Session}
     */
-    _this._userAgent.on("invite", function () {
-      _this.trigger("incommingInvite");
+    _this._userAgent.on("invite", function (session) {
+      _this._activeCall = new _telnyxCall.TelnyxCall(_this._userAgent);
+      _this._activeCall.incomingCall(session);
+      _this.trigger("incomingInvite", { activeCall: _this._activeCall });
     });
 
     /**
@@ -963,22 +966,14 @@ var TelnyxDevice = function (_EventEmitter) {
   }
 
   /**
-  * @deprecated This method is no longer used. It will eventually be removed from the API.
+  * Start the connection to the WebSocket server, and restore the previous state if stopped.
+  * You need to start the WebSocket connection before you can send or recieve calls. If you
+  * try to `initiateCall` without first starting the connection, it will be started for you,
+  * but it will not be stopped when the call is terminated.
   */
 
 
   _createClass(TelnyxDevice, [{
-    key: 'authorize',
-    value: function authorize() {}
-
-    /**
-    * Start the connection to the WebSocket server, and restore the previous state if stopped.
-    * You need to start the WebSocket connection before you can send or recieve calls. If you
-    * try to `initiateCall` without first starting the connection, it will be started for you,
-    * but it will not be stopped when the call is terminated.
-    */
-
-  }, {
     key: 'startWS',
     value: function startWS() {
       this._userAgent.start();
@@ -1007,37 +1002,46 @@ var TelnyxDevice = function (_EventEmitter) {
       return this._userAgent.isConnected();
     }
 
-    ///**
-    //* Register the device with the SIP server so that it can receive incoming calls.
-    //*
-    //* @param {Object} options
-    //* @param {String[]} options.extraHeaders SIP headers that will be added to each REGISTER request. Each header is string in the format `"X-Header-Name: Header-value"`.
-    //* @emits TelnyxDevice#registered
-    //*/
-    //register(options) {
-    //  this._userAgent.register(options);
-    //}
+    /**
+    * Register the device with the SIP server so that it can receive incoming calls.
+    *
+    * @param {Object} options
+    * @param {String[]} options.extraHeaders SIP headers that will be added to each REGISTER request. Each header is string in the format `"X-Header-Name: Header-value"`.
+    * @emits TelnyxDevice#registered
+    */
 
-    ///**
-    //* Unregister the device from the SIP server; it will no longer recieve incoming calls.
-    //*
-    //* @param {Object} options
-    //* @param {Boolean} options.all [Optional] - if set & `true` it will unregister *all* bindings for the SIP user.
-    //* @param {String[]} options.extraHeaders SIP headers that will be added to each REGISTER request. Each header is string in the format `"X-Header-Name: Header-value"`.
-    //* @emits TelnyxDevice#unregistered
-    //*/
-    //unregister(options) {
-    //  this._userAgent.register(options);
-    //}
+  }, {
+    key: 'register',
+    value: function register(options) {
+      this._userAgent.register(options);
+    }
 
-    ///**
-    //* Status of SIP registration
-    //*
-    //* @return {Boolean} isRegistered `true` if the device is registered with the SIP Server, `false` otherwise
-    //*/
-    //isRegistered() {
-    //  return this._userAgent.isRegistered();
-    //}
+    /**
+    * Unregister the device from the SIP server; it will no longer recieve incoming calls.
+    *
+    * @param {Object} options
+    * @param {Boolean} options.all [Optional] - if set & `true` it will unregister *all* bindings for the SIP user.
+    * @param {String[]} options.extraHeaders SIP headers that will be added to each REGISTER request. Each header is string in the format `"X-Header-Name: Header-value"`.
+    * @emits TelnyxDevice#unregistered
+    */
+
+  }, {
+    key: 'unregister',
+    value: function unregister(options) {
+      this._userAgent.register(options);
+    }
+
+    /**
+    * Status of SIP registration
+    *
+    * @return {Boolean} isRegistered `true` if the device is registered with the SIP Server, `false` otherwise
+    */
+
+  }, {
+    key: 'isRegistered',
+    value: function isRegistered() {
+      return this._userAgent.isRegistered();
+    }
 
     /**
     * Make a phone call
@@ -1050,7 +1054,8 @@ var TelnyxDevice = function (_EventEmitter) {
     key: 'initiateCall',
     value: function initiateCall(phoneNumber) {
       var uri = new _sip2.default.URI("sip", phoneNumber, this.host, this.port).toString();
-      this._activeCall = new _telnyxCall.TelnyxCall(this._userAgent, uri);
+      this._activeCall = new _telnyxCall.TelnyxCall(this._userAgent);
+      this._activeCall.makeCall(uri);
       return this._activeCall;
     }
 
@@ -1124,12 +1129,15 @@ var TelnyxCall = exports.TelnyxCall = function (_EventEmitter) {
   /**
   * Create a TelnyxCall. Normally created by TelnyxDevice.
   *
+  * Once a call is created, you can either make a call with `makeCall()`
+  * or set yourself up to recieve an incoming call with `incomingCall()`
+  *
   * @param {UA} UA - A SIP.js User Agent
   * @param {String} inviteUri - A Properly formatted SIP.js invite URI (create with SIP.URI)
   *
   * @emits TelnyxCall#connecting
   */
-  function TelnyxCall(UA, inviteUri) {
+  function TelnyxCall(UA) {
     _classCallCheck(this, TelnyxCall);
 
     var _this = _possibleConstructorReturn(this, (TelnyxCall.__proto__ || Object.getPrototypeOf(TelnyxCall)).call(this));
@@ -1139,352 +1147,399 @@ var TelnyxCall = exports.TelnyxCall = function (_EventEmitter) {
     _this.UA = UA;
 
     _this.UA.start();
-    _this._session = _this.UA.invite(inviteUri, inviteOptions);
-
-    /**
-    * connecting event:
-    *
-    * Fired as the system starts to make the connection.
-    * This is after the userMedia (microphone) has been aquired.
-    *
-    * @event TelnyxCall#connecting
-    * @type {object}
-    */
-    _this._session.on("connecting", function () {
-      _this.trigger("connecting");_this._status = 'initiating';
-    });
-
-    /**
-    * progress event:
-    *
-    * Usually fired twice during call intialization, once for TRYING and once for RINGING.
-    *
-    * @event TelnyxCall#progress
-    * @type {object}
-    * @property {object} response - Details of the response
-    */
-    _this._session.on("progress", function (response) {
-      return _this.trigger("progress", response);
-    });
-
-    /**
-    * accepted event:
-    *
-    * Fired when the call was accepted by the callee. The call is now connected.
-    *
-    * @event TelnyxCall#accepted
-    * @type {object}
-    * @property {object} data - Details of the response
-    */
-    _this._session.on("accepted", function (data) {
-      _this.trigger("accepted", data), _this._status = 'connected';
-    });
-
-    /**
-    * dtmf event:
-    *
-    * Sent when the user has successfully sent a DTMF (keypad) signal.
-    *
-    * @event TelnyxCall#dtmf
-    * @type {object}
-    * @property {object} request - Details of the request
-    * @property {string} dtmf - the key(s) that were submitted
-    */
-    _this._session.on("dtmf", function (request, dtmf) {
-      return _this.trigger("dtmf", request, dtmf);
-    });
-
-    /**
-    * muted event:
-    *
-    * Fired when the system has successfully responded to a mute request.
-    *
-    * @event TelnyxCall#muted
-    * @type {object}
-    * @property {object} data - Details of the response
-    */
-    _this._session.on("muted", function (data) {
-      return _this.trigger("muted", data);
-    });
-
-    /**
-    * unmuted event
-    *
-    * Fired when the system has successfully responded to an unmute request.
-    *
-    * @event TelnyxCall#unmuted
-    * @type {object}
-    * @property {object} data - Details of the response
-    */
-    _this._session.on("unmuted", function (data) {
-      return _this.trigger("unmuted", data);
-    });
-
-    /**
-    * cancel event:
-    *
-    * Fired when the call was terminated before end to end connection was established,
-    * usually by the user's request.
-    *
-    * @event TelnyxCall#cancel
-    */
-    _this._session.on("cancel", function () {
-      _this.trigger("cancel");_this._status = 'ended';
-    });
-
-    /**
-    * refer event
-    *
-    * @event TelnyxCall#refer
-    * @property {function} callback
-    * @property {object} response
-    * @property {object} newSession
-    */
-    _this._session.on("refer", function (callback, response, newSession) {
-      _this.trigger("rejected");
-    });
-
-    /**
-    * replaced event
-    *
-    * @event TelnyxCall#replaced
-    * @property {object} newSession
-    */
-    _this._session.on("replaced", function (newSession) {
-      _this.trigger("rejected", newSession);
-    });
-
-    /**
-    * rejected event
-    *
-    * @event TelnyxCall#rejected
-    * @property {object} response
-    * @property {object} cause
-    */
-    _this._session.on("rejected", function (response, cause) {
-      _this.trigger("rejected", response, cause);_this._status = 'ended';
-    });
-
-    /**
-    * failed event
-    *
-    * @event TelnyxCall#failed
-    * @property {object} response
-    * @property {object} cause
-    */
-    _this._session.on("failed", function (response, cause) {
-      _this.trigger("failed", response, cause);_this._status = 'ended';
-    });
-
-    /**
-    * terminated event
-    *
-    * @event TelnyxCall#terminated
-    * @property {object} response
-    * @property {object} cause
-    */
-    _this._session.on("terminated", function (message, cause) {
-      _this.trigger("terminated", message, cause);_this._status = 'ended';
-    });
-
-    /**
-    * bye event
-    *
-    * @event TelnyxCall#bye
-    */
-    _this._session.on("bye", function () {
-      _this.trigger("bye");_this._status = 'ended';
-    });
-
-    /**
-    * userMediaRequest event:
-    *
-    * Fired when the every time the system checks to see if it has microphone permission from the user.
-    * You can use this to detect when the browser's "Allow website to use microphone" dialog is open,
-    * but you will need to be somewhat careful. This event will fire even if the user already has
-    * given permission, then will be immediately followed by a {@link TelnyxCall#userMedia} event.
-    * If you wish to have your UI display some sort of "asking for permission" element, you may need to
-    * debounce this event; listening for {@link TelnyxCall#userMedia} to cancel your UI update.
-    *
-    * @event TelnyxCall#userMediaRequest
-    * @property {object} constraints
-    */
-    _this._session.mediaHandler.on("userMediaRequest", function (constraints) {
-      _this.trigger("userMediaRequest", constraints);
-    });
-
-    /**
-    * userMedia event:
-    *
-    * Fired when the system has aquired permission to use the microphone. This will happen either
-    * immediately after {@link TelnyxCall#userMediaRequest} if the user has previously given permission
-    * or after the user approves the request.
-    *
-    * @event TelnyxCall#userMedia
-    * @property {object} stream
-    */
-    _this._session.mediaHandler.on("userMedia", function (stream) {
-      _this.trigger("userMedia", stream);
-    });
-
-    /**
-    * userMediaFailed event:
-    *
-    * Fired when the user refuses permission to use the microphone. There is no way back from this
-    * except for the user to go into browser settings and remove the exception for your site.
-    *
-    * @event TelnyxCall#userMediaFailed
-    * @property {object} error
-    */
-    _this._session.mediaHandler.on("userMediaFailed", function (error) {
-      _this.trigger("userMediaFailed", error);
-    });
-
-    /**
-    * iceGathering event
-    *
-    * @event TelnyxCall#iceGathering
-    */
-    _this._session.mediaHandler.on("iceGathering", function () {
-      _this.trigger("iceGathering");
-    });
-
-    /**
-    * iceCandidate event
-    *
-    * @event TelnyxCall#iceCandidate
-    * @property {object} candidate
-    */
-    _this._session.mediaHandler.on("iceCandidate", function (candidate) {
-      _this.trigger("iceCandidate", candidate);
-    });
-
-    /**
-    * iceGatheringComplete event
-    *
-    * @event TelnyxCall#iceGatheringComplete
-    */
-    _this._session.mediaHandler.on("iceGatheringComplete", function () {
-      _this.trigger("iceGatheringComplete");
-    });
-
-    /**
-    * iceConnection event
-    *
-    * @event TelnyxCall#iceConnection
-    */
-    _this._session.mediaHandler.on("iceConnection", function () {
-      _this.trigger("iceConnection");
-    });
-
-    /**
-    * iceConnectionChecking event
-    *
-    * @event TelnyxCall#iceConnectionChecking
-    */
-    _this._session.mediaHandler.on("iceConnectionChecking", function () {
-      _this.trigger("iceConnectionChecking");
-    });
-
-    /**
-    * iceConnectionConnected event
-    *
-    * @event TelnyxCall#iceConnectionConnected
-    */
-    _this._session.mediaHandler.on("iceConnectionConnected", function () {
-      _this.trigger("iceConnectionConnected");
-    });
-
-    /**
-    * iceConnectionCompleted event
-    *
-    * @event TelnyxCall#iceConnectionCompleted
-    */
-    _this._session.mediaHandler.on("iceConnectionCompleted", function () {
-      _this.trigger("iceConnectionCompleted");
-    });
-
-    /**
-    * iceConnectionFailed event
-    *
-    * @event TelnyxCall#iceConnectionFailed
-    */
-    _this._session.mediaHandler.on("iceConnectionFailed", function () {
-      _this.trigger("iceConnectionFailed");
-    });
-
-    /**
-    * iceConnectionDisconnected event
-    *
-    * @event TelnyxCall#iceConnectionDisconnected
-    */
-    _this._session.mediaHandler.on("iceConnectionDisconnected", function () {
-      _this.trigger("iceConnectionDisconnected");
-    });
-
-    /**
-    * iceConnectionClosed event
-    *
-    * @event TelnyxCall#iceConnectionClosed
-    */
-    _this._session.mediaHandler.on("iceConnectionClosed", function () {
-      _this.trigger("iceConnectionClosed");
-    });
-
-    /**
-    * getDescription event
-    *
-    * @event TelnyxCall#getDescription
-    * @property {object} sdpWrapper
-    */
-    _this._session.mediaHandler.on("getDescription", function (sdpWrapper) {
-      _this.trigger("getDescription", sdpWrapper);
-    });
-
-    /**
-    * setDescription event
-    *
-    * @event TelnyxCall#setDescription
-    * @property {object} sdpWrapper
-    */
-    _this._session.mediaHandler.on("setDescription", function (sdpWrapper) {
-      _this.trigger("setDescription", sdpWrapper);
-    });
-
-    /**
-    * dataChannel event
-    *
-    * @event TelnyxCall#dataChannel
-    * @property {object} dataChannel
-    */
-    _this._session.mediaHandler.on("dataChannel", function (dataChannel) {
-      _this.trigger("dataChannel", dataChannel);
-    });
-
-    /**
-    * addStream event
-    *
-    * @event TelnyxCall#addStream
-    * @property {object} stream
-    */
-    _this._session.mediaHandler.on("addStream", function (stream) {
-      _this.trigger("addStream", stream);
-    });
-
     return _this;
   }
-  // accept() {}
-  // reject() {}
-  // ignore() {}
 
   /**
-  * Is the call still initiating
+  * Make a call to a phone number
   *
-  * @return {Boolean} isInitiating
+  * @param {URI} inviteUri - A SIP.js URI that includes the phone number to connect to
   */
 
 
   _createClass(TelnyxCall, [{
+    key: 'makeCall',
+    value: function makeCall(inviteUri) {
+      this._callType = 'outgoing';
+      this._session = this.UA.invite(inviteUri, inviteOptions);
+      this._attatchSessionEvents();
+    }
+
+    /**
+    * Set up to handle an incoming call.
+    * The calling function will then be able to accept or reject the call.
+    *
+    * @param {Session} session - A SIP.js Session, specifically of the SIP.ServerContext type
+    */
+
+  }, {
+    key: 'incomingCall',
+    value: function incomingCall(session) {
+      this._callType = 'incoming';
+      this._session = session;
+      this._attatchSessionEvents();
+    }
+  }, {
+    key: '_attatchSessionEvents',
+    value: function _attatchSessionEvents() {
+      var _this2 = this;
+
+      /**
+      * connecting event:
+      *
+      * Fired as the system starts to make the connection.
+      * This is after the userMedia (microphone) has been aquired.
+      *
+      * @event TelnyxCall#connecting
+      * @type {object}
+      */
+      this._session.on("connecting", function () {
+        _this2.trigger("connecting");_this2._status = 'initiating';
+      });
+
+      /**
+      * progress event:
+      *
+      * Usually fired twice during call intialization, once for TRYING and once for RINGING.
+      *
+      * @event TelnyxCall#progress
+      * @type {object}
+      * @property {object} response - Details of the response
+      */
+      this._session.on("progress", function (response) {
+        return _this2.trigger("progress", response);
+      });
+
+      /**
+      * accepted event:
+      *
+      * Fired when the call was accepted by the callee. The call is now connected.
+      *
+      * @event TelnyxCall#accepted
+      * @type {object}
+      * @property {object} data - Details of the response
+      */
+      this._session.on("accepted", function (data) {
+        _this2.trigger("accepted", data), _this2._status = 'connected';
+      });
+
+      /**
+      * dtmf event:
+      *
+      * Sent when the user has successfully sent a DTMF (keypad) signal.
+      *
+      * @event TelnyxCall#dtmf
+      * @type {object}
+      * @property {object} request - Details of the request
+      * @property {string} dtmf - the key(s) that were submitted
+      */
+      this._session.on("dtmf", function (request, dtmf) {
+        return _this2.trigger("dtmf", request, dtmf);
+      });
+
+      /**
+      * muted event:
+      *
+      * Fired when the system has successfully responded to a mute request.
+      *
+      * @event TelnyxCall#muted
+      * @type {object}
+      * @property {object} data - Details of the response
+      */
+      this._session.on("muted", function (data) {
+        return _this2.trigger("muted", data);
+      });
+
+      /**
+      * unmuted event
+      *
+      * Fired when the system has successfully responded to an unmute request.
+      *
+      * @event TelnyxCall#unmuted
+      * @type {object}
+      * @property {object} data - Details of the response
+      */
+      this._session.on("unmuted", function (data) {
+        return _this2.trigger("unmuted", data);
+      });
+
+      /**
+      * cancel event:
+      *
+      * Fired when the call was terminated before end to end connection was established,
+      * usually by the user's request.
+      *
+      * @event TelnyxCall#cancel
+      */
+      this._session.on("cancel", function () {
+        _this2.trigger("cancel");_this2._status = 'ended';
+      });
+
+      /**
+      * refer event
+      *
+      * @event TelnyxCall#refer
+      * @property {function} callback
+      * @property {object} response
+      * @property {object} newSession
+      */
+      this._session.on("refer", function (callback, response, newSession) {
+        _this2.trigger("rejected");
+      });
+
+      /**
+      * replaced event
+      *
+      * @event TelnyxCall#replaced
+      * @property {object} newSession
+      */
+      this._session.on("replaced", function (newSession) {
+        _this2.trigger("rejected", newSession);
+      });
+
+      /**
+      * rejected event
+      *
+      * @event TelnyxCall#rejected
+      * @property {object} response
+      * @property {object} cause
+      */
+      this._session.on("rejected", function (response, cause) {
+        _this2.trigger("rejected", response, cause);_this2._status = 'ended';
+      });
+
+      /**
+      * failed event
+      *
+      * @event TelnyxCall#failed
+      * @property {object} response
+      * @property {object} cause
+      */
+      this._session.on("failed", function (response, cause) {
+        _this2.trigger("failed", response, cause);_this2._status = 'ended';
+      });
+
+      /**
+      * terminated event
+      *
+      * @event TelnyxCall#terminated
+      * @property {object} response
+      * @property {object} cause
+      */
+      this._session.on("terminated", function (message, cause) {
+        _this2.trigger("terminated", message, cause);_this2._status = 'ended';
+      });
+
+      /**
+      * bye event
+      *
+      * @event TelnyxCall#bye
+      */
+      this._session.on("bye", function () {
+        _this2.trigger("bye");_this2._status = 'ended';
+      });
+
+      /**
+      * userMediaRequest event:
+      *
+      * Fired when the every time the system checks to see if it has microphone permission from the user.
+      * You can use this to detect when the browser's "Allow website to use microphone" dialog is open,
+      * but you will need to be somewhat careful. This event will fire even if the user already has
+      * given permission, then will be immediately followed by a {@link TelnyxCall#userMedia} event.
+      * If you wish to have your UI display some sort of "asking for permission" element, you may need to
+      * debounce this event; listening for {@link TelnyxCall#userMedia} to cancel your UI update.
+      *
+      * @event TelnyxCall#userMediaRequest
+      * @property {object} constraints
+      */
+      this._session.mediaHandler.on("userMediaRequest", function (constraints) {
+        _this2.trigger("userMediaRequest", constraints);
+      });
+
+      /**
+      * userMedia event:
+      *
+      * Fired when the system has aquired permission to use the microphone. This will happen either
+      * immediately after {@link TelnyxCall#userMediaRequest} if the user has previously given permission
+      * or after the user approves the request.
+      *
+      * @event TelnyxCall#userMedia
+      * @property {object} stream
+      */
+      this._session.mediaHandler.on("userMedia", function (stream) {
+        _this2.trigger("userMedia", stream);
+      });
+
+      /**
+      * userMediaFailed event:
+      *
+      * Fired when the user refuses permission to use the microphone. There is no way back from this
+      * except for the user to go into browser settings and remove the exception for your site.
+      *
+      * @event TelnyxCall#userMediaFailed
+      * @property {object} error
+      */
+      this._session.mediaHandler.on("userMediaFailed", function (error) {
+        _this2.trigger("userMediaFailed", error);
+      });
+
+      /**
+      * iceGathering event
+      *
+      * @event TelnyxCall#iceGathering
+      */
+      this._session.mediaHandler.on("iceGathering", function () {
+        _this2.trigger("iceGathering");
+      });
+
+      /**
+      * iceCandidate event
+      *
+      * @event TelnyxCall#iceCandidate
+      * @property {object} candidate
+      */
+      this._session.mediaHandler.on("iceCandidate", function (candidate) {
+        _this2.trigger("iceCandidate", candidate);
+      });
+
+      /**
+      * iceGatheringComplete event
+      *
+      * @event TelnyxCall#iceGatheringComplete
+      */
+      this._session.mediaHandler.on("iceGatheringComplete", function () {
+        _this2.trigger("iceGatheringComplete");
+      });
+
+      /**
+      * iceConnection event
+      *
+      * @event TelnyxCall#iceConnection
+      */
+      this._session.mediaHandler.on("iceConnection", function () {
+        _this2.trigger("iceConnection");
+      });
+
+      /**
+      * iceConnectionChecking event
+      *
+      * @event TelnyxCall#iceConnectionChecking
+      */
+      this._session.mediaHandler.on("iceConnectionChecking", function () {
+        _this2.trigger("iceConnectionChecking");
+      });
+
+      /**
+      * iceConnectionConnected event
+      *
+      * @event TelnyxCall#iceConnectionConnected
+      */
+      this._session.mediaHandler.on("iceConnectionConnected", function () {
+        _this2.trigger("iceConnectionConnected");
+      });
+
+      /**
+      * iceConnectionCompleted event
+      *
+      * @event TelnyxCall#iceConnectionCompleted
+      */
+      this._session.mediaHandler.on("iceConnectionCompleted", function () {
+        _this2.trigger("iceConnectionCompleted");
+      });
+
+      /**
+      * iceConnectionFailed event
+      *
+      * @event TelnyxCall#iceConnectionFailed
+      */
+      this._session.mediaHandler.on("iceConnectionFailed", function () {
+        _this2.trigger("iceConnectionFailed");
+      });
+
+      /**
+      * iceConnectionDisconnected event
+      *
+      * @event TelnyxCall#iceConnectionDisconnected
+      */
+      this._session.mediaHandler.on("iceConnectionDisconnected", function () {
+        _this2.trigger("iceConnectionDisconnected");
+      });
+
+      /**
+      * iceConnectionClosed event
+      *
+      * @event TelnyxCall#iceConnectionClosed
+      */
+      this._session.mediaHandler.on("iceConnectionClosed", function () {
+        _this2.trigger("iceConnectionClosed");
+      });
+
+      /**
+      * getDescription event
+      *
+      * @event TelnyxCall#getDescription
+      * @property {object} sdpWrapper
+      */
+      this._session.mediaHandler.on("getDescription", function (sdpWrapper) {
+        _this2.trigger("getDescription", sdpWrapper);
+      });
+
+      /**
+      * setDescription event
+      *
+      * @event TelnyxCall#setDescription
+      * @property {object} sdpWrapper
+      */
+      this._session.mediaHandler.on("setDescription", function (sdpWrapper) {
+        _this2.trigger("setDescription", sdpWrapper);
+      });
+
+      /**
+      * dataChannel event
+      *
+      * @event TelnyxCall#dataChannel
+      * @property {object} dataChannel
+      */
+      this._session.mediaHandler.on("dataChannel", function (dataChannel) {
+        _this2.trigger("dataChannel", dataChannel);
+      });
+
+      /**
+      * addStream event
+      *
+      * @event TelnyxCall#addStream
+      * @property {object} stream
+      */
+      this._session.mediaHandler.on("addStream", function (stream) {
+        _this2.trigger("addStream", stream);
+      });
+    }
+  }, {
+    key: 'accept',
+    value: function accept() {
+      if (this._callType !== 'incoming') {
+        console.error("accept() method is only valid on incoming calls");
+        return;
+      }
+      this._session.accept();
+    }
+  }, {
+    key: 'reject',
+    value: function reject() {
+      if (this._callType !== 'incoming') {
+        console.error("accept() method is only valid on incoming calls");
+        return;
+      }
+      this._session.reject();
+    }
+
+    /**
+    * Is the call still initiating
+    *
+    * @return {Boolean} isInitiating
+    */
+
+  }, {
     key: 'isInitiating',
     value: function isInitiating() {
       return this._status === 'initiating';
