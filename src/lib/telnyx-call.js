@@ -27,6 +27,7 @@ export class TelnyxCall extends EventEmitter {
     super();
     this._mute = false;
     this._status = 'starting';
+    this._callType = '';
     this.UA = UA;
 
     this.UA.start();
@@ -347,7 +348,7 @@ export class TelnyxCall extends EventEmitter {
   }
 
   /**
-  * Is the call still initiating
+  * Is the call still initiating?
   *
   * @return {Boolean} isInitiating
   */
@@ -356,7 +357,7 @@ export class TelnyxCall extends EventEmitter {
   }
 
   /**
-  * Is the call has connected
+  * Has the call connected?
   *
   * @return {Boolean} isConnected
   */
@@ -365,12 +366,30 @@ export class TelnyxCall extends EventEmitter {
   }
 
   /**
-  * Is the call has ended
+  * Has the call ended?
   *
   * @return {Boolean} isEnded
   */
   isEnded() {
     return this._status === 'ended';
+  }
+
+  /**
+  * Is this an incoming call?
+  *
+  * @return {Boolean} isIncoming
+  */
+  isIncoming() {
+    return this._callType === 'incoming';
+  }
+
+  /**
+  * Is this an outgoing call?
+  *
+  * @return {Boolean} isOutgoing
+  */
+  isOutgoing() {
+    return this._callType === 'outgoing';
   }
 
   /**
