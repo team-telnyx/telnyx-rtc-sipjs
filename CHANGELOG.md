@@ -1,3 +1,18 @@
+### 1.3.0 (2017-4-6)
+
+##### Chores
+
+* **dist files:** commit dist files. ([a2e9985c](https://github.com/team-telnyx/telnyx-rtc/commit/a2e9985ccf36f15983edc64f722da9ffefbbe6cb))
+
+##### New Features
+
+* **incoming calls:** Draft support for incoming calls. ([dcbb176a](https://github.com/team-telnyx/telnyx-rtc/commit/dcbb176a59e41d0553c6096ce4acb843f79b2965))
+
+##### Bug Fixes
+
+* **TelnyxCall:** add isIncoming and isOutgoing helpers ([d8093687](https://github.com/team-telnyx/telnyx-rtc/commit/d8093687f5d08f01f39e6b8c0287c59538f88db8))
+* **sip.js:** upgrade from 0.7.5 to 0.7.7 ([c1e11521](https://github.com/team-telnyx/telnyx-rtc/commit/c1e115218e89ccc62ee76ee4daef634e4b36f0b7))
+
 ### 1.2.0 (2017-1-13)
 
 ##### Chores
