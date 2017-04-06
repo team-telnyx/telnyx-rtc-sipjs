@@ -36,7 +36,10 @@
   "devDependencies": {
     "babel-core": "^6.20.0",
     "babel-loader": "^6.2.9",
+    "babel-preset-es2015": "^6.18.0",
+    "es6-event-emitter": "^1.5.2",
     "jasmine-core": "^2.5.2",
+    "jsdoc-to-markdown": "^2.0.1",
     "json-loader": "^0.5.4",
     "karma": "^1.3.0",
     "karma-jasmine": "^1.1.0",
@@ -45,14 +48,11 @@
     "karma-webpack": "^1.8.0",
     "phantomjs-polyfill": "0.0.2",
     "rimraf": "^2.5.4",
-    "webpack": "2.2.0-rc.2",
-    "babel-preset-es2015": "^6.18.0",
-    "es6-event-emitter": "^1.5.2",
-    "jsdoc-to-markdown": "^2.0.1"
+    "webpack": "2.2.0-rc.2"
   },
   "optionalDependencies": {
     "@telnyx/rtc-mocks": "^1.0.3",
-    "sip.js": "0.7.5"
+    "sip.js": "^0.7.7"
   },
   "publishConfig": {
     "registry": "https://artifactory.telnyx.com/api/npm/npm-telnyx/"

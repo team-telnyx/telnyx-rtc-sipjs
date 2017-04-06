@@ -2268,10 +2268,6 @@ ms@0.7.2:
   version "0.7.2"
   resolved "https://registry.yarnpkg.com/ms/-/ms-0.7.2.tgz#ae25cf2512b3885a1d95d7f037868d8431124765"
 
-nan@1.4.x:
-  version "1.4.3"
-  resolved "https://registry.yarnpkg.com/nan/-/nan-1.4.3.tgz#c56b5404698063696f597435f9163c312aea5009"
-
 nan@^2.3.0:
   version "2.5.0"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.5.0.tgz#aa8f1e34531d807e9e27755b234b4a6ec0c152a8"
@@ -2909,11 +2905,11 @@ signal-exit@^3.0.0:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.2.tgz#b5fdc08f1287ea1178628e415e25132b73646c6d"
 
-sip.js@0.7.5:
-  version "0.7.5"
-  resolved "https://registry.yarnpkg.com/sip.js/-/sip.js-0.7.5.tgz#86ace7051594f91b4551bdb8120a16c44962d3a2"
+sip.js@^0.7.7:
+  version "0.7.7"
+  resolved "https://registry.yarnpkg.com/sip.js/-/sip.js-0.7.7.tgz#5274ea19383b3593e0f90945702cd311562a2add"
   dependencies:
-    ws "^0.6.4"
+    ws "^1.0.1"
   optionalDependencies:
     promiscuous "^0.6.0"
 
@@ -3459,18 +3455,10 @@ wrappy@1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/wrappy/-/wrappy-1.0.2.tgz#b5243d8f3ec1aa35f1364605bc0d1036e30ab69f"
 
-ws@1.0.1:
+ws@1.0.1, ws@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/ws/-/ws-1.0.1.tgz#7d0b2a2e58cddd819039c29c9de65045e1b310e9"
   dependencies:
-    options ">=0.0.5"
-    ultron "1.0.x"
-
-ws@^0.6.4:
-  version "0.6.5"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-0.6.5.tgz#f00844001ca393b003681ff32838e72a560dafd4"
-  dependencies:
-    nan "1.4.x"
     options ">=0.0.5"
     ultron "1.0.x"
 
