@@ -6,9 +6,13 @@
 
 * [TelnyxCall](#TelnyxCall)
     * [new TelnyxCall(UA, inviteUri)](#new_TelnyxCall_new)
+    * [.makeCall(inviteUri)](#TelnyxCall+makeCall)
+    * [.incomingCall(session)](#TelnyxCall+incomingCall)
     * [.isInitiating()](#TelnyxCall+isInitiating) ⇒ <code>Boolean</code>
     * [.isConnected()](#TelnyxCall+isConnected) ⇒ <code>Boolean</code>
     * [.isEnded()](#TelnyxCall+isEnded) ⇒ <code>Boolean</code>
+    * [.isIncoming()](#TelnyxCall+isIncoming) ⇒ <code>Boolean</code>
+    * [.isOutgoing()](#TelnyxCall+isOutgoing) ⇒ <code>Boolean</code>
     * [.disconnect()](#TelnyxCall+disconnect)
     * ~~[.shutdown()](#TelnyxCall+shutdown)~~
     * [.mute(isMute)](#TelnyxCall+mute)
@@ -51,33 +55,73 @@
 ### new TelnyxCall(UA, inviteUri)
 Create a TelnyxCall. Normally created by TelnyxDevice.
 
+Once a call is created, you can either make a call with `makeCall()`
+or set yourself up to recieve an incoming call with `incomingCall()`
+
 
 | Param | Type | Description |
 | --- | --- | --- |
 | UA | <code>UA</code> | A SIP.js User Agent |
 | inviteUri | <code>String</code> | A Properly formatted SIP.js invite URI (create with SIP.URI) |
 
+<a name="TelnyxCall+makeCall"></a>
+
+### telnyxCall.makeCall(inviteUri)
+Make a call to a phone number
+
+**Kind**: instance method of <code>[TelnyxCall](#TelnyxCall)</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| inviteUri | <code>URI</code> | A SIP.js URI that includes the phone number to connect to |
+
+<a name="TelnyxCall+incomingCall"></a>
+
+### telnyxCall.incomingCall(session)
+Set up to handle an incoming call.
+The calling function will then be able to accept or reject the call.
+
+**Kind**: instance method of <code>[TelnyxCall](#TelnyxCall)</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| session | <code>Session</code> | A SIP.js Session, specifically of the SIP.ServerContext type |
+
 <a name="TelnyxCall+isInitiating"></a>
 
 ### telnyxCall.isInitiating() ⇒ <code>Boolean</code>
-Is the call still initiating
+Is the call still initiating?
 
 **Kind**: instance method of <code>[TelnyxCall](#TelnyxCall)</code>  
 **Returns**: <code>Boolean</code> - isInitiating  
 <a name="TelnyxCall+isConnected"></a>
 
 ### telnyxCall.isConnected() ⇒ <code>Boolean</code>
-Is the call has connected
+Has the call connected?
 
 **Kind**: instance method of <code>[TelnyxCall](#TelnyxCall)</code>  
 **Returns**: <code>Boolean</code> - isConnected  
 <a name="TelnyxCall+isEnded"></a>
 
 ### telnyxCall.isEnded() ⇒ <code>Boolean</code>
-Is the call has ended
+Has the call ended?
 
 **Kind**: instance method of <code>[TelnyxCall](#TelnyxCall)</code>  
 **Returns**: <code>Boolean</code> - isEnded  
+<a name="TelnyxCall+isIncoming"></a>
+
+### telnyxCall.isIncoming() ⇒ <code>Boolean</code>
+Is this an incoming call?
+
+**Kind**: instance method of <code>[TelnyxCall](#TelnyxCall)</code>  
+**Returns**: <code>Boolean</code> - isIncoming  
+<a name="TelnyxCall+isOutgoing"></a>
+
+### telnyxCall.isOutgoing() ⇒ <code>Boolean</code>
+Is this an outgoing call?
+
+**Kind**: instance method of <code>[TelnyxCall](#TelnyxCall)</code>  
+**Returns**: <code>Boolean</code> - isOutgoing  
 <a name="TelnyxCall+disconnect"></a>
 
 ### telnyxCall.disconnect()

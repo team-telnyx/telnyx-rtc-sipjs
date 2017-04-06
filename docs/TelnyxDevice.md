@@ -7,9 +7,12 @@ Represents the software phone running in a web browser or other context.
 
 * [TelnyxDevice](#TelnyxDevice)
     * [new TelnyxDevice(config)](#new_TelnyxDevice_new)
-    * ~~[.authorize()](#TelnyxDevice+authorize)~~
     * [.startWS()](#TelnyxDevice+startWS)
     * [.stopWS()](#TelnyxDevice+stopWS)
+    * [.isWSConnected()](#TelnyxDevice+isWSConnected) ⇒ <code>Boolean</code>
+    * [.register(options)](#TelnyxDevice+register)
+    * [.unregister(options)](#TelnyxDevice+unregister)
+    * [.isRegistered()](#TelnyxDevice+isRegistered) ⇒ <code>Boolean</code>
     * [.initiateCall(phoneNumber)](#TelnyxDevice+initiateCall) ⇒ <code>TelnyxCall</code>
     * [.activeCall()](#TelnyxDevice+activeCall) ⇒ <code>TelnyxCall</code>
     * ["wsConnecting"](#TelnyxDevice+event_wsConnecting)
@@ -43,12 +46,6 @@ Create a new TelnyxDevice.
 | config.turnServers.password | <code>String</code> | Password to authenticate on TURN server(s) |
 | config.registrarServer | <code>String</code> | URI for the registrar Server. Format `sip:123.0.0.0:5066` |
 
-<a name="TelnyxDevice+authorize"></a>
-
-### ~~telnyxDevice.authorize()~~
-***Deprecated***
-
-**Kind**: instance method of <code>[TelnyxDevice](#TelnyxDevice)</code>  
 <a name="TelnyxDevice+startWS"></a>
 
 ### telnyxDevice.startWS()
@@ -65,6 +62,47 @@ Stop the connection to the WebSocket server, saving the state so it can be resto
 (by `start`).
 
 **Kind**: instance method of <code>[TelnyxDevice](#TelnyxDevice)</code>  
+<a name="TelnyxDevice+isWSConnected"></a>
+
+### telnyxDevice.isWSConnected() ⇒ <code>Boolean</code>
+Status of the WebSocket connection
+
+**Kind**: instance method of <code>[TelnyxDevice](#TelnyxDevice)</code>  
+**Returns**: <code>Boolean</code> - isConnected `true` if the device is connected to the WebSocket server, `false` otherwise  
+<a name="TelnyxDevice+register"></a>
+
+### telnyxDevice.register(options)
+Register the device with the SIP server so that it can receive incoming calls.
+
+**Kind**: instance method of <code>[TelnyxDevice](#TelnyxDevice)</code>  
+**Emits**: <code>[registered](#TelnyxDevice+event_registered)</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| options | <code>Object</code> |  |
+| options.extraHeaders | <code>Array.&lt;String&gt;</code> | SIP headers that will be added to each REGISTER request. Each header is string in the format `"X-Header-Name: Header-value"`. |
+
+<a name="TelnyxDevice+unregister"></a>
+
+### telnyxDevice.unregister(options)
+Unregister the device from the SIP server; it will no longer recieve incoming calls.
+
+**Kind**: instance method of <code>[TelnyxDevice](#TelnyxDevice)</code>  
+**Emits**: <code>[unregistered](#TelnyxDevice+event_unregistered)</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| options | <code>Object</code> |  |
+| options.all | <code>Boolean</code> | [Optional] - if set & `true` it will unregister *all* bindings for the SIP user. |
+| options.extraHeaders | <code>Array.&lt;String&gt;</code> | SIP headers that will be added to each REGISTER request. Each header is string in the format `"X-Header-Name: Header-value"`. |
+
+<a name="TelnyxDevice+isRegistered"></a>
+
+### telnyxDevice.isRegistered() ⇒ <code>Boolean</code>
+Status of SIP registration
+
+**Kind**: instance method of <code>[TelnyxDevice](#TelnyxDevice)</code>  
+**Returns**: <code>Boolean</code> - isRegistered `true` if the device is registered with the SIP Server, `false` otherwise  
 <a name="TelnyxDevice+initiateCall"></a>
 
 ### telnyxDevice.initiateCall(phoneNumber) ⇒ <code>TelnyxCall</code>
@@ -75,7 +113,7 @@ Make a phone call
 
 | Param | Type | Description |
 | --- | --- | --- |
-| phoneNumber | <code>String</code> | The desination phone number to connect to. Just digits, no punctuation. Example "12065551111". |
+| phoneNumber | <code>String</code> | The desination phone number to connect to. Just digits, no punctuation. Example `"12065551111"`. |
 
 <a name="TelnyxDevice+activeCall"></a>
 
@@ -156,7 +194,7 @@ Fired when a registration attepmt fails.
 <a name="TelnyxDevice+event_invite"></a>
 
 ### "invite"
-incommingInvite event
+incomingInvite event
 
 Fired when the device recieves an INVITE request
 
@@ -169,7 +207,7 @@ message event
 **Kind**: event emitted by <code>[TelnyxDevice](#TelnyxDevice)</code>  
 **Properties**
 
-| Name | Type |
-| --- | --- |
-| message | <code>object</code> | 
+| Name | Type | Description |
+| --- | --- | --- |
+| message | <code>object</code> | Contains the SIP message sent and server context necessary to receive and send replies. |
 
