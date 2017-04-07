@@ -336,7 +336,7 @@ export class TelnyxCall extends EventEmitter {
       console.error("accept() method is only valid on incoming calls");
       return;
     }
-    this._session.accept();
+    this._session.accept({media: {constraints: {audio: true, video: false}}});
   }
 
   reject() {
