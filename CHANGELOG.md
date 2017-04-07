@@ -1,3 +1,13 @@
+#### 1.3.1 (2017-4-7)
+
+##### Documentation Changes
+
+* **all:** Build new docs ([17a9a684](https://github.com/team-telnyx/telnyx-rtc/commit/17a9a684d88adb708b57e3cd4d92cc1447a3140c))
+
+##### Bug Fixes
+
+* **incoming:** Don't ask user for permission to use camera ([c8447a89](https://github.com/team-telnyx/telnyx-rtc/commit/c8447a896b3bd2f133c0318e338d6827e6098695))
+
 ### 1.3.0 (2017-4-6)
 
 ##### Chores
