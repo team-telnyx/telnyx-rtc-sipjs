@@ -6,8 +6,11 @@
 
 * [TelnyxCall](#TelnyxCall)
     * [new TelnyxCall(UA, inviteUri)](#new_TelnyxCall_new)
+    * [.request](#TelnyxCall+request) ⇒ <code>object</code>
     * [.makeCall(inviteUri)](#TelnyxCall+makeCall)
     * [.incomingCall(session)](#TelnyxCall+incomingCall)
+    * [.accept()](#TelnyxCall+accept)
+    * [.reject()](#TelnyxCall+reject)
     * [.isInitiating()](#TelnyxCall+isInitiating) ⇒ <code>Boolean</code>
     * [.isConnected()](#TelnyxCall+isConnected) ⇒ <code>Boolean</code>
     * [.isEnded()](#TelnyxCall+isEnded) ⇒ <code>Boolean</code>
@@ -64,6 +67,15 @@ or set yourself up to recieve an incoming call with `incomingCall()`
 | UA | <code>UA</code> | A SIP.js User Agent |
 | inviteUri | <code>String</code> | A Properly formatted SIP.js invite URI (create with SIP.URI) |
 
+<a name="TelnyxCall+request"></a>
+
+### telnyxCall.request ⇒ <code>object</code>
+The request object contains metadata about the current session,
+including the who the call is going `to` and in the case of incoming calls,
+who the call is coming `from`.
+
+**Kind**: instance property of <code>[TelnyxCall](#TelnyxCall)</code>  
+**Returns**: <code>object</code> - request  
 <a name="TelnyxCall+makeCall"></a>
 
 ### telnyxCall.makeCall(inviteUri)
@@ -87,6 +99,24 @@ The calling function will then be able to accept or reject the call.
 | --- | --- | --- |
 | session | <code>Session</code> | A SIP.js Session, specifically of the SIP.ServerContext type |
 
+<a name="TelnyxCall+accept"></a>
+
+### telnyxCall.accept()
+Accept an incoming call.
+When a call is received `TelnyxDevice` will create a new `TelnyxCall` for the session
+and emit a `incomingInvite` event.
+The new `TelnyxCall` is passed along with the event. Call `accept()` to accept the call.
+
+**Kind**: instance method of <code>[TelnyxCall](#TelnyxCall)</code>  
+<a name="TelnyxCall+reject"></a>
+
+### telnyxCall.reject()
+Reject an incoming call.
+When a call is received `TelnyxDevice` will create a new `TelnyxCall` for the session
+and emit a `incomingInvite` event.
+The new `TelnyxCall` is passed along with the event. Call `reject()` to reject the call.
+
+**Kind**: instance method of <code>[TelnyxCall](#TelnyxCall)</code>  
 <a name="TelnyxCall+isInitiating"></a>
 
 ### telnyxCall.isInitiating() ⇒ <code>Boolean</code>
