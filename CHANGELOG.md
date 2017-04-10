@@ -1,3 +1,13 @@
+#### 1.3.2 (2017-4-10)
+
+##### Documentation Changes
+
+* **TelnyxCall:** Add docs for accept, reject and request ([702385d3](https://github.com/team-telnyx/telnyx-rtc/commit/702385d37c14905e858a6ca65a303a822a23c1ae))
+
+##### New Features
+
+* **TelnyxCall:** Add 'request' support to show From info on incoming ([c135527c](https://github.com/team-telnyx/telnyx-rtc/commit/c135527cfd2f4a8cd52ae47094eb8bf1be80058e))
+
 #### 1.3.1 (2017-4-7)
 
 ##### Documentation Changes
