@@ -1515,6 +1515,14 @@ var TelnyxCall = exports.TelnyxCall = function (_EventEmitter) {
         _this2.trigger("addStream", stream);
       });
     }
+
+    /**
+     * Accept an incoming call.
+     * When a call is received `TelnyxDevice` will create a new `TelnyxCall` for the session
+     * and emit a `incomingInvite` event.
+     * The new `TelnyxCall` is passed along with the event. Call `accept()` to accept the call.
+     */
+
   }, {
     key: 'accept',
     value: function accept() {
@@ -1524,6 +1532,14 @@ var TelnyxCall = exports.TelnyxCall = function (_EventEmitter) {
       }
       this._session.accept({ media: { constraints: { audio: true, video: false } } });
     }
+
+    /**
+     * Reject an incoming call.
+     * When a call is received `TelnyxDevice` will create a new `TelnyxCall` for the session
+     * and emit a `incomingInvite` event.
+     * The new `TelnyxCall` is passed along with the event. Call `reject()` to reject the call.
+     */
+
   }, {
     key: 'reject',
     value: function reject() {
@@ -1535,13 +1551,22 @@ var TelnyxCall = exports.TelnyxCall = function (_EventEmitter) {
     }
 
     /**
+     * The request object contains metadata about the current session,
+     * including the who the call is going `to` and in the case of incoming calls,
+     * who the call is coming `from`.
+     *
+     * @return {object} request
+     */
+
+  }, {
+    key: 'isInitiating',
+
+
+    /**
     * Is the call still initiating?
     *
     * @return {Boolean} isInitiating
     */
-
-  }, {
-    key: 'isInitiating',
     value: function isInitiating() {
       return this._status === 'initiating';
     }
@@ -1673,6 +1698,21 @@ var TelnyxCall = exports.TelnyxCall = function (_EventEmitter) {
     key: 'status',
     value: function status() {
       return this._status;
+    }
+  }, {
+    key: 'request',
+    get: function get() {
+      if (!this._session) {
+        return false;
+      }
+
+      if (this._callType === 'incoming') {
+        return this._session.transaction.request;
+      } else if (this._callType === 'outgoing') {
+        return this._session.request;
+      } else {
+        return false;
+      }
     }
   }]);
 

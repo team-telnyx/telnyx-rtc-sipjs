@@ -327,10 +327,14 @@ export class TelnyxCall extends EventEmitter {
     * @property {object} stream
     */
     this._session.mediaHandler.on("addStream", (stream) => {this.trigger("addStream", stream);});
-
   }
 
-
+  /**
+   * Accept an incoming call.
+   * When a call is received `TelnyxDevice` will create a new `TelnyxCall` for the session
+   * and emit a `incomingInvite` event.
+   * The new `TelnyxCall` is passed along with the event. Call `accept()` to accept the call.
+   */
   accept() {
     if (this._callType !== 'incoming') {
       console.error("accept() method is only valid on incoming calls");
@@ -339,12 +343,39 @@ export class TelnyxCall extends EventEmitter {
     this._session.accept({media: {constraints: {audio: true, video: false}}});
   }
 
+  /**
+   * Reject an incoming call.
+   * When a call is received `TelnyxDevice` will create a new `TelnyxCall` for the session
+   * and emit a `incomingInvite` event.
+   * The new `TelnyxCall` is passed along with the event. Call `reject()` to reject the call.
+   */
   reject() {
     if (this._callType !== 'incoming') {
       console.error("accept() method is only valid on incoming calls");
       return;
     }
     this._session.reject();
+  }
+
+  /**
+   * The request object contains metadata about the current session,
+   * including the who the call is going `to` and in the case of incoming calls,
+   * who the call is coming `from`.
+   *
+   * @return {object} request
+   */
+  get request() {
+    if (!this._session) {
+      return false;
+    }
+
+    if (this._callType === 'incoming') {
+      return this._session.transaction.request;
+    } else if (this._callType === 'outgoing') {
+      return this._session.request;
+    } else {
+      return false;
+    }
   }
 
   /**
