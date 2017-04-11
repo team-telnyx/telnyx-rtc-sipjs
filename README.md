@@ -1,6 +1,13 @@
 # @telnyx/rtc
 
-A stand alone JS API for WebRTC. Essentially a fork of https://github.com/team-telnyx/js-dial without the UI components in it, and following the new API described in https://telnyx.atlassian.net/wiki/display/TT/WebRTC+Core+API.
+A stand alone JS API for Telnyx's WebRTC offering.
+Our goal is to provide an API for Telnyx WebRTC that is as simple as possible, but no simpler.
+We hide as much of the gorey, low level SIP and auth details as we can, while still providing enough detail
+to build a beautiful and responsive phone UI.
+
+Under the covers we use [SIP.JS](https://sipjs.com/), but that is merely an implementation detail. It is bundled in the distributed file.
+
+
 
 ## Installation
 
@@ -90,7 +97,7 @@ $ yarn run test
 
 ### Generating Docs
 
-We use [jsdoc-to-markdown](https://github.com/jsdoc2md/jsdoc-to-markdown) to generate github friendly docs. 
+We use [jsdoc-to-markdown](https://github.com/jsdoc2md/jsdoc-to-markdown) to generate github friendly docs.
 
 ```shell
 $ yarn run docs
