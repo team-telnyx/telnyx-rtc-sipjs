@@ -1,3 +1,13 @@
+#### 1.3.3 (2017-4-12)
+
+##### Documentation Changes
+
+* **README:** remove links to private repos from readme ([32764939](https://github.com/team-telnyx/telnyx-rtc/commit/3276493989a73b405e61cd15ab6d0a8bf88c9ac3))
+
+##### Bug Fixes
+
+* **Audio:** Fix one-way audio issue. (TEL-964) ([6b236b85](https://github.com/team-telnyx/telnyx-rtc/commit/6b236b850f6267d5e49a3940b03e06b6a0d92463))
+
 #### 1.3.2 (2017-4-10)
 
 ##### Documentation Changes
