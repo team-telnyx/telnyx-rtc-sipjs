@@ -861,6 +861,7 @@ var TelnyxDevice = function (_EventEmitter) {
       stunServers: _this.stunServers,
       turnServers: _this.turnServers,
       registrarServer: _this.registrarServer
+      //, traceSip: true
     });
 
     /**
@@ -1056,6 +1057,7 @@ var TelnyxDevice = function (_EventEmitter) {
       var uri = new _sip2.default.URI("sip", phoneNumber, this.host, this.port).toString();
       this._activeCall = new _telnyxCall.TelnyxCall(this._userAgent);
       this._activeCall.makeCall(uri);
+      console.log(this._activeCall);
       return this._activeCall;
     }
 
@@ -1113,16 +1115,6 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var inviteOptions = {
-  media: {
-    constraints: {
-      audio: true,
-      video: false
-    },
-    render: {}
-  }
-};
-
 var TelnyxCall = exports.TelnyxCall = function (_EventEmitter) {
   _inherits(TelnyxCall, _EventEmitter);
 
@@ -1146,8 +1138,11 @@ var TelnyxCall = exports.TelnyxCall = function (_EventEmitter) {
     _this._status = 'starting';
     _this._callType = '';
     _this.UA = UA;
+    _this._docBody = document.getElementsByTagName('body')[0];
+    _this.audioElement = false;
 
     _this.UA.start();
+
     return _this;
   }
 
@@ -1162,7 +1157,7 @@ var TelnyxCall = exports.TelnyxCall = function (_EventEmitter) {
     key: 'makeCall',
     value: function makeCall(inviteUri) {
       this._callType = 'outgoing';
-      this._session = this.UA.invite(inviteUri, inviteOptions);
+      this._session = this.UA.invite(inviteUri, this._getAudioElement());
       this._attatchSessionEvents();
     }
 
@@ -1179,6 +1174,16 @@ var TelnyxCall = exports.TelnyxCall = function (_EventEmitter) {
       this._callType = 'incoming';
       this._session = session;
       this._attatchSessionEvents();
+    }
+  }, {
+    key: '_getAudioElement',
+    value: function _getAudioElement() {
+      if (!this.audioElement) {
+        this.audioElement = document.createElement('audio');
+        this.audioElement.className = 'telnyx-rtc-remote-audio';
+        this._docBody.appendChild(this.audioElement);
+      }
+      return this.audioElement;
     }
   }, {
     key: '_attatchSessionEvents',
@@ -1530,7 +1535,12 @@ var TelnyxCall = exports.TelnyxCall = function (_EventEmitter) {
         console.error("accept() method is only valid on incoming calls");
         return;
       }
-      this._session.accept({ media: { constraints: { audio: true, video: false } } });
+      this._session.accept({
+        media: {
+          constraints: { audio: true, video: false },
+          render: { remote: this._getAudioElement() }
+        }
+      });
     }
 
     /**

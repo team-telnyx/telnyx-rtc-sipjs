@@ -57,6 +57,7 @@ class TelnyxDevice extends EventEmitter {
       stunServers: this.stunServers,
       turnServers: this.turnServers,
       registrarServer: this.registrarServer
+      //, traceSip: true
     });
 
     /**

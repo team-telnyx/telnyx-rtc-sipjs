@@ -1,15 +1,5 @@
 import EventEmitter from 'es6-event-emitter';
 
-const inviteOptions = {
-  media: {
-    constraints: {
-      audio: true,
-      video: false
-    },
-    render: {}
-  }
-};
-
 export class TelnyxCall extends EventEmitter {
 
   /**
@@ -29,8 +19,11 @@ export class TelnyxCall extends EventEmitter {
     this._status = 'starting';
     this._callType = '';
     this.UA = UA;
+    this._docBody = document.getElementsByTagName('body')[0];
+    this.audioElement = false;
 
     this.UA.start();
+
   }
 
   /**
@@ -40,7 +33,7 @@ export class TelnyxCall extends EventEmitter {
   */
   makeCall(inviteUri) {
     this._callType = 'outgoing';
-    this._session = this.UA.invite(inviteUri, inviteOptions);
+    this._session = this.UA.invite(inviteUri, this._getAudioElement());
     this._attatchSessionEvents();
   }
 
@@ -56,6 +49,15 @@ export class TelnyxCall extends EventEmitter {
     this._attatchSessionEvents();
   }
 
+
+  _getAudioElement() {
+    if (!this.audioElement) {
+      this.audioElement = document.createElement('audio');
+      this.audioElement.className = 'telnyx-rtc-remote-audio';
+      this._docBody.appendChild(this.audioElement);
+    }
+    return this.audioElement;
+  }
 
   _attatchSessionEvents() {
     /**
@@ -340,7 +342,12 @@ export class TelnyxCall extends EventEmitter {
       console.error("accept() method is only valid on incoming calls");
       return;
     }
-    this._session.accept({media: {constraints: {audio: true, video: false}}});
+    this._session.accept({
+      media: {
+        constraints: {audio: true, video: false},
+        render: {remote: this._getAudioElement()}
+      }
+    });
   }
 
   /**
