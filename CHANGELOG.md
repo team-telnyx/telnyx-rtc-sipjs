@@ -1,3 +1,9 @@
+#### 1.3.4 (2017-4-13)
+
+##### New Features
+
+* **TelnyxDevice:** Add support for tuning log level and traceSip ([3238131f](https://github.com/team-telnyx/telnyx-rtc/commit/3238131f07049f610915eb431741e75ac2d92726))
+
 #### 1.3.3 (2017-4-12)
 
 ##### Documentation Changes

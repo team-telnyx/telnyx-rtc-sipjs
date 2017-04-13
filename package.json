@@ -1,6 +1,6 @@
 {
   "name": "@telnyx/rtc",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "description": "Javascript API Library for Telnyx web telephony system.",
   "main": "dist/telnyx-rtc.js",
   "files": [
