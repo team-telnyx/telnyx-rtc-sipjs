@@ -25,6 +25,9 @@ class TelnyxDevice extends EventEmitter {
   * @param {String} config.turnServers.username Username to authenticate on TURN server(s)
   * @param {String} config.turnServers.password Password to authenticate on TURN server(s)
   * @param {String} config.registrarServer URI for the registrar Server. Format `sip:123.0.0.0:5066`
+  * @param {Boolean} config.traceSip If true, SIP traces will be logged to the dev console.
+  * @param {String} config.logLevel One of "debug", "log", "warn", "error", "off".  default is "log"
+
   */
   constructor(config) {
     super();
@@ -48,7 +51,7 @@ class TelnyxDevice extends EventEmitter {
 
     let uri = new SIP.URI("sip", this.username, this.host, this.port).toString();
 
-    this._userAgent = new SIP.UA({
+    let sipUAConfig = {
       uri: uri,
       wsServers: this.wsServers,
       authorizationUser: this.username,
@@ -57,8 +60,18 @@ class TelnyxDevice extends EventEmitter {
       stunServers: this.stunServers,
       turnServers: this.turnServers,
       registrarServer: this.registrarServer
-      //, traceSip: true
-    });
+    };
+    if (config.traceSip) {
+      sipUAConfig.traceSip = true;
+    }
+    if (config.logLevel) {
+      if (config.logLevel === "off") {
+        sipUAConfig.log = { builtinEnabled: false };
+      } else {
+        sipUAConfig.log = { level: config.logLevel };
+      }
+    }
+    this._userAgent = new SIP.UA(sipUAConfig);
 
     /**
     * wsConnecting event

@@ -820,7 +820,9 @@ var TelnyxDevice = function (_EventEmitter) {
   * @param {String} config.turnServers.username Username to authenticate on TURN server(s)
   * @param {String} config.turnServers.password Password to authenticate on TURN server(s)
   * @param {String} config.registrarServer URI for the registrar Server. Format `sip:123.0.0.0:5066`
-  */
+  * @param {Boolean} config.traceSip If true, SIP traces will be logged to the dev console.
+  * @param {String} config.logLevel One of "debug", "log", "warn", "error", "off".  default is "log"
+   */
   function TelnyxDevice(config) {
     _classCallCheck(this, TelnyxDevice);
 
@@ -852,7 +854,7 @@ var TelnyxDevice = function (_EventEmitter) {
 
     var uri = new _sip2.default.URI("sip", _this.username, _this.host, _this.port).toString();
 
-    _this._userAgent = new _sip2.default.UA({
+    var sipUAConfig = {
       uri: uri,
       wsServers: _this.wsServers,
       authorizationUser: _this.username,
@@ -861,8 +863,18 @@ var TelnyxDevice = function (_EventEmitter) {
       stunServers: _this.stunServers,
       turnServers: _this.turnServers,
       registrarServer: _this.registrarServer
-      //, traceSip: true
-    });
+    };
+    if (config.traceSip) {
+      sipUAConfig.traceSip = true;
+    }
+    if (config.logLevel) {
+      if (config.logLevel === "off") {
+        sipUAConfig.log = { builtinEnabled: false };
+      } else {
+        sipUAConfig.log = { level: config.logLevel };
+      }
+    }
+    _this._userAgent = new _sip2.default.UA(sipUAConfig);
 
     /**
     * wsConnecting event
@@ -1057,7 +1069,6 @@ var TelnyxDevice = function (_EventEmitter) {
       var uri = new _sip2.default.URI("sip", phoneNumber, this.host, this.port).toString();
       this._activeCall = new _telnyxCall.TelnyxCall(this._userAgent);
       this._activeCall.makeCall(uri);
-      console.log(this._activeCall);
       return this._activeCall;
     }
 
