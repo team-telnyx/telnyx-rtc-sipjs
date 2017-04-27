@@ -44,19 +44,19 @@ import { TelnyxDevice } from "@telnyx/rtc";
 
 ```javascript
 let config = {
-  host: "123.0.0.0",
-  port: "5066",
-  wsServers: "ws://123.0.0.0:5066",
+  host: "sip.telnyx.com",
+  port: "7443",
+  wsServers: "wss://sip.telnyx.com:7443",
   displayName: "Phone User",
   username: "testuser",
   password: "testuserPassword",
-  stunServers: "stun:stun.example.com:3843",
+  stunServers: "stun:stun.telnyx.com:3843",
   turnServers: {
-    urls: ["turn:123.0.0.0:3478?transport=tcp"],
+    urls: ["turn:turn.telnyx.com:3478?transport=tcp"],
     username: "turnuser",
     password: "turnpassword"
   },
-  registrarServer: "sip:123.0.0.0:5066"
+  registrarServer: "sip:sip.telnyx.com:7443"
 };
 
 let device = new TelnyxDevice(config);

@@ -15,13 +15,13 @@ class TelnyxDevice extends EventEmitter {
   * @param {Object} config Configuration Object
   * @param {String} config.host The host name or IP address of the SIP server
   * @param {String} config.port The port of the SIP server
-  * @param {String} config.wsServers URI(s) of the WebSocket Servers. Format `ws://123.0.0.0:5066`. An array of strings is also accepted.
+  * @param {String} config.wsServers URI(s) of the WebSocket Servers. Format `wss://123.0.0.0:5066`. An array of strings is also accepted.
   * @param {String} config.username The username for the SIP server
   * @param {String} config.password The passweord for the SIP server
   * @param {String} config.displayName The human readable name passed in the from field. Will be used for Caller ID
   * @param {String} config.stunServers URI(s) for how to connect to the STUN servers. Format `stun:stun.telnyx.com:8000`. An array of strings is also accepted.
   * @param {Object} config.turnServers Details for how to connect to the TURN servers. An array of objects is also accepted.
-  * @param {String} config.turnServers.urls URI(s) for the TURN server(s). Format `turn:123.0.0.0:8000?transport=tcp`. An array of strings is also accepted.
+  * @param {String} config.turnServers.urls URI(s) for the TURN server(s). Format `turn:turn.telnyx.com:8000?transport=tcp`. An array of strings is also accepted.
   * @param {String} config.turnServers.username Username to authenticate on TURN server(s)
   * @param {String} config.turnServers.password Password to authenticate on TURN server(s)
   * @param {String} config.registrarServer URI for the registrar Server. Format `sip:123.0.0.0:5066`
