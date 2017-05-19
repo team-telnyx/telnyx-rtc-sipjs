@@ -1,3 +1,13 @@
+#### 1.3.5 (2017-5-19)
+
+##### Documentation Changes
+
+* **server:** Update to new stun and turn servers in examples ([963e5499](https://github.com/team-telnyx/telnyx-rtc/commit/963e5499a12e679147e58d9913632663a681ceb9))
+
+##### Bug Fixes
+
+* **TelnyxDevice:** Chrome would not connect to web socket [TEL-1010] ([4da7d0ab](https://github.com/team-telnyx/telnyx-rtc/commit/4da7d0ab447dbc7d72e95d06f47fd68700a3e834))
+
 #### 1.3.4 (2017-4-13)
 
 ##### New Features
