@@ -254,7 +254,11 @@ class TelnyxDevice extends EventEmitter {
   _ensureConnectivityWithSipServer() {
     try {
       var xhr = new XMLHttpRequest();
-      xhr.open("GET", "https://"+this.host, true);
+      xhr.addEventListener("error", () => {
+        console.info("Failed http connection to SIP server is expected. It is related to a chrome bug.");
+      });
+      xhr.open("GET", `https://${this.host}:${this.port}`, true);
+      xhr.send();
     } catch(e) {
       // do nothing. If an error occurs, it's not going to matter here.
     }
