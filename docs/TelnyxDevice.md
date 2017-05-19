@@ -35,16 +35,18 @@ Create a new TelnyxDevice.
 | config | <code>Object</code> | Configuration Object |
 | config.host | <code>String</code> | The host name or IP address of the SIP server |
 | config.port | <code>String</code> | The port of the SIP server |
-| config.wsServers | <code>String</code> | URI(s) of the WebSocket Servers. Format `ws://123.0.0.0:5066`. An array of strings is also accepted. |
+| config.wsServers | <code>String</code> | URI(s) of the WebSocket Servers. Format `wss://123.0.0.0:5066`. An array of strings is also accepted. |
 | config.username | <code>String</code> | The username for the SIP server |
 | config.password | <code>String</code> | The passweord for the SIP server |
 | config.displayName | <code>String</code> | The human readable name passed in the from field. Will be used for Caller ID |
 | config.stunServers | <code>String</code> | URI(s) for how to connect to the STUN servers. Format `stun:stun.telnyx.com:8000`. An array of strings is also accepted. |
 | config.turnServers | <code>Object</code> | Details for how to connect to the TURN servers. An array of objects is also accepted. |
-| config.turnServers.urls | <code>String</code> | URI(s) for the TURN server(s). Format `turn:123.0.0.0:8000?transport=tcp`. An array of strings is also accepted. |
+| config.turnServers.urls | <code>String</code> | URI(s) for the TURN server(s). Format `turn:turn.telnyx.com:8000?transport=tcp`. An array of strings is also accepted. |
 | config.turnServers.username | <code>String</code> | Username to authenticate on TURN server(s) |
 | config.turnServers.password | <code>String</code> | Password to authenticate on TURN server(s) |
 | config.registrarServer | <code>String</code> | URI for the registrar Server. Format `sip:123.0.0.0:5066` |
+| config.traceSip | <code>Boolean</code> | If true, SIP traces will be logged to the dev console. |
+| config.logLevel | <code>String</code> | One of "debug", "log", "warn", "error", "off".  default is "log" |
 
 <a name="TelnyxDevice+startWS"></a>
 

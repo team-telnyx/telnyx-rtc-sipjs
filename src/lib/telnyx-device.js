@@ -49,6 +49,8 @@ class TelnyxDevice extends EventEmitter {
 
     this._userAgent = null;
 
+    this._ensureConnectivityWithSipServer();
+
     let uri = new SIP.URI("sip", this.username, this.host, this.port).toString();
 
     let sipUAConfig = {
@@ -242,6 +244,21 @@ class TelnyxDevice extends EventEmitter {
   * @return {TelnyxCall} activeCall Keep an eye on the call's state by listening to events emitted by activeCall
   */
   activeCall() { return this._activeCall; }
+
+
+  // Ensure that we can connect to the SIP server.
+  // Due to a bug in chrome, we need to open an http connection to the SIP server
+  // before trying to connect via Web Socket.
+  //
+  //  https://bugs.chromium.org/p/chromium/issues/detail?id=329884
+  _ensureConnectivityWithSipServer() {
+    try {
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "https://"+this.host, true);
+    } catch(e) {
+      // do nothing. If an error occurs, it's not going to matter here.
+    }
+  }
 }
 
 function arrayify(item) {
