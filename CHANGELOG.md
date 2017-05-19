@@ -1,3 +1,9 @@
+#### 1.3.6 (2017-5-19)
+
+##### Bug Fixes
+
+* **TelnyxDevice:** Chrome consistently connecting to SIP [TEL-1010] ([890a75f2](https://github.com/team-telnyx/telnyx-rtc/commit/890a75f2693a912bf20ef77075ebddb4eaf8ba53))
+
 #### 1.3.5 (2017-5-19)
 
 ##### Documentation Changes
