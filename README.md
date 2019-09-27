@@ -6,6 +6,8 @@ The Telnyx SIP-based WebRTC JS library powers up your web application with the a
 
 Check out the library in action in [this web dialer demo](https://webrtc.telnyx.com/).
 
+*Looking for more WebRTC features, JSON-RPC support or need to quickly get spun up with a React app?  Telnyx also has a robust [WebRTC SDK](https://github.com/team-telnyx/webrtc) available as a separate npm module.*
+
 
 ## Installation
 
