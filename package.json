@@ -54,10 +54,8 @@
     "karma-webpack": "^1.8.0",
     "phantomjs-polyfill": "0.0.2",
     "rimraf": "^2.5.4",
+    "sip.js": "^0.7.7",
     "webpack": "2.2.0-rc.2"
-  },
-  "dependencies": {
-    "sip.js": "^0.7.7"
   },
   "optionalDependencies": {
     "@telnyx/release": "^0.5.1",
