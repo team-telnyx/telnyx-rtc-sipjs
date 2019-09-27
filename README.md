@@ -1,46 +1,35 @@
-# @telnyx/rtc
+# Telnyx WebRTC SIP JavaScript library
 
-A stand alone JS API for Telnyx's WebRTC offering.
-Our goal is to provide an API for Telnyx WebRTC that is as simple as possible, but no simpler.
-We hide as much of the gorey, low level SIP and auth details as we can, while still providing enough detail
-to build a beautiful and responsive phone UI.
+The Telnyx SIP-based WebRTC JS library powers up your web application with the ability to make and receive phone calls directly in the browser.
 
-Under the covers we use [SIP.JS](https://sipjs.com/), but that is merely an implementation detail. It is bundled in the distributed file.
-
+Check out the library in action in [this web dialer demo](https://webrtc.telnyx.com/).
 
 
 ## Installation
 
-You'll need to get set up to use the [@telnyx npm registry](https://github.com/team-telnyx/documentation/blob/master/languages/javascript/node/registry.md) before you start.
+Install this package with [npm](https://www.npmjs.com/):
 
 ```shell
-$ npm install --save @telnyx/rtc
+$ npm install --save @telnyx/rtc-sipjs
 ```
 
-or
+or using [yarn](https://yarnpkg.com/lang/en/):
 
 ```shell
-$ yarn add @telnyx/rtc
+$ yarn add @telnyx/rtc-sipjs
 ```
 
 
 ## Usage
 
-In Telnyx webpack built projects you'll need to require the library:
+Import [TelnyxDevice](https://github.com/team-telnyx/telnyx-rtc-sipjs/blob/master/docs/TelnyxDevice.md) in the module where you need it.
 
 ```javascript
-require("script!../../node_modules/@telnyx/rtc/dist/telnyx-rtc.js");
+import { TelnyxDevice } from "@telnyx/rtc-sipjs";
 ```
 
 
-Then import [TelnyxDevice](https://github.com/team-telnyx/telnyx-rtc/blob/master/docs/TelnyxDevice.md) in the module where you need it.
-
-```javascript
-import { TelnyxDevice } from "@telnyx/rtc";
-```
-
-
-### Example Config and initiation
+### Example config and initiation
 
 ```javascript
 let config = {
@@ -62,7 +51,7 @@ let config = {
 let device = new TelnyxDevice(config);
 ```
 
-### Example Phone Call
+### Example phone call
 
 ```javascript
 let activeCall = device.initiateCall("1235556789");
@@ -71,11 +60,11 @@ activeCall.on("connecting", () => {console.log("it's connecting!")});
 activeCall.on("accepted", () => {console.log("We're on a phone call!")});
 ```
 
-See the [TelnyxDevice](https://github.com/team-telnyx/telnyx-rtc/blob/master/docs/TelnyxDevice.md) and [TelnyxCall](https://github.com/team-telnyx/telnyx-rtc/blob/master/docs/TelnyxCall.md) for more details.
+See the [TelnyxDevice](https://github.com/team-telnyx/telnyx-rtc-sipjs/blob/master/docs/TelnyxDevice.md) and [TelnyxCall](https://github.com/team-telnyx/telnyx-rtc-sipjs/blob/master/docs/TelnyxCall.md) for more details.
 
 ## Testing your UI
 
-Sometimes you need to test your UI without making phone calls all the time. See [@telnyx/rtc-mocks](https://github.com/team-telnyx/telnyx-rtc-mocks).
+Sometimes you need to test your UI without making phone calls all the time. See [@telnyx/rtc-mocks](https://github.com/team-telnyx/telnyx-rtc-sipjs-mocks).
 
 
 
@@ -84,7 +73,9 @@ Sometimes you need to test your UI without making phone calls all the time. See 
 When working on the package directly, please use [yarn](https://github.com/yarnpkg/yarn) instead of npm.
 
 ```shell
-$ yarn run build
+$ yarn build
+# Or to watch for changes
+$ yarn start
 ```
 
 Use [@telnyx/npm-release](https://github.com/team-telnyx/npm-release) to manage versions.
@@ -92,7 +83,7 @@ Use [@telnyx/npm-release](https://github.com/team-telnyx/npm-release) to manage 
 ### Running tests
 
 ```shell
-$ yarn run test
+$ yarn test
 ```
 
 ### Generating Docs
@@ -100,6 +91,5 @@ $ yarn run test
 We use [jsdoc-to-markdown](https://github.com/jsdoc2md/jsdoc-to-markdown) to generate github friendly docs.
 
 ```shell
-$ yarn run docs
+$ yarn docs
 ```
-

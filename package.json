@@ -1,8 +1,8 @@
 {
-  "name": "@telnyx/rtc",
+  "name": "@telnyx/rtc-sipjs",
   "version": "1.3.6",
   "description": "Javascript API Library for Telnyx web telephony system.",
-  "main": "dist/telnyx-rtc.js",
+  "main": "dist/telnyx-rtc-sipjs.js",
   "files": [
     "dist/"
   ],
@@ -14,24 +14,26 @@
     "build": "npm run build:webpack",
     "watch": "webpack --watch",
     "start": "npm run watch",
-    "test": "karma start"
+    "test": "karma start",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run test"
   },
   "contributors": [
     {
       "name": "Jason Brackins",
       "email": "jasonb@telnyx.com",
-      "url": "http://telnyx.com/"
+      "url": "https://telnyx.com"
     },
     {
       "name": "Sua Yoo",
       "email": "sua@telnyx.com",
-      "url": "http://telnyx.com/"
+      "url": "https://telnyx.com"
     }
   ],
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "https://github.com/team-telnyx/telnyx-rtc"
+    "url": "https://github.com/team-telnyx/telnyx-rtc-sipjs"
   },
   "devDependencies": {
     "babel-core": "^6.20.0",
@@ -50,12 +52,12 @@
     "rimraf": "^2.5.4",
     "webpack": "2.2.0-rc.2"
   },
-  "optionalDependencies": {
-    "@telnyx/rtc-mocks": "^1.0.3",
+  "dependencies": {
     "sip.js": "^0.7.7"
   },
-  "publishConfig": {
-    "registry": "https://artifactory.telnyx.com/api/npm/npm-telnyx/"
+  "optionalDependencies": {
+    "@telnyx/release": "^0.5.1",
+    "@telnyx/rtc-mocks": "^1.0.3"
   },
   "engines": {
     "node": ">=4.0.0"
