@@ -1,7 +1,15 @@
 {
   "name": "@telnyx/rtc-sipjs",
   "version": "1.3.6",
-  "description": "Javascript API Library for Telnyx web telephony system.",
+  "description": "Telnyx JavaScript library for building WebRTC apps with SIP.js",
+  "keywords": [
+    "telnyx",
+    "webrtc",
+    "sip",
+    "sip.js",
+    "soft phone",
+    "voip"
+  ],
   "main": "dist/telnyx-rtc-sipjs.js",
   "files": [
     "dist/"

@@ -1,5 +1,7 @@
 # Telnyx WebRTC SIP JavaScript library
 
+![npm (scoped)](https://img.shields.io/npm/v/@telnyx/rtc-sipjs)
+
 The Telnyx SIP-based WebRTC JS library powers up your web application with the ability to make and receive phone calls directly in the browser.
 
 Check out the library in action in [this web dialer demo](https://webrtc.telnyx.com/).
