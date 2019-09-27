@@ -53,7 +53,7 @@ export class TelnyxCall extends EventEmitter {
   _getAudioElement() {
     if (!this.audioElement) {
       this.audioElement = document.createElement('audio');
-      this.audioElement.className = 'telnyx-rtc-remote-audio';
+      this.audioElement.className = 'telnyx-rtc-sipjs-remote-audio';
       this._docBody.appendChild(this.audioElement);
     }
     return this.audioElement;
