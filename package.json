@@ -15,8 +15,9 @@
     "watch": "webpack --watch",
     "start": "npm run watch",
     "test": "karma start",
+    "release": "telnyx-npm-release",
     "prepare": "npm run build",
-    "prepublishOnly": "npm run test"
+    "prepublishOnly": "npm run test && npm run release"
   },
   "contributors": [
     {
@@ -34,6 +35,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/team-telnyx/telnyx-rtc-sipjs"
+  },
+  "publishConfig": {
+    "@telnyx:registry": "https://registry.npmjs.org"
   },
   "devDependencies": {
     "babel-core": "^6.20.0",
