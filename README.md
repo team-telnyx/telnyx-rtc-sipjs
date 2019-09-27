@@ -62,23 +62,18 @@ activeCall.on("accepted", () => {console.log("We're on a phone call!")});
 
 See the [TelnyxDevice](https://github.com/team-telnyx/telnyx-rtc-sipjs/blob/master/docs/TelnyxDevice.md) and [TelnyxCall](https://github.com/team-telnyx/telnyx-rtc-sipjs/blob/master/docs/TelnyxCall.md) for more details.
 
-## Testing your UI
 
-Sometimes you need to test your UI without making phone calls all the time. See [@telnyx/rtc-mocks](https://github.com/team-telnyx/telnyx-rtc-sipjs-mocks).
+## Development
 
-
-
-## Building the package
+### Building the package
 
 When working on the package directly, please use [yarn](https://github.com/yarnpkg/yarn) instead of npm.
 
 ```shell
 $ yarn build
-# Or to watch for changes
+# Or to watch for changes to files:
 $ yarn start
 ```
-
-Use [@telnyx/npm-release](https://github.com/team-telnyx/npm-release) to manage versions.
 
 ### Running tests
 
@@ -88,7 +83,7 @@ $ yarn test
 
 ### Generating Docs
 
-We use [jsdoc-to-markdown](https://github.com/jsdoc2md/jsdoc-to-markdown) to generate github friendly docs.
+We use [jsdoc-to-markdown](https://github.com/jsdoc2md/jsdoc-to-markdown) to generate GitHub friendly docs.
 
 ```shell
 $ yarn docs
