@@ -3,11 +3,11 @@ var webpack = require('webpack');
 
 module.exports = {
   mode: 'development',
+  devtool: 'inline-source-map',
   entry: {
     'telnyx-rtc-sipjs': './src/telnyx-rtc-sipjs.js',
     'telnyx-rtc-sipjs.min': './src/telnyx-rtc-sipjs.js',
   },
-  devtool: 'source-map',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: '[name].js',
