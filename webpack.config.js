@@ -2,7 +2,7 @@ var path = require('path');
 var webpack = require('webpack');
 
 module.exports = {
-  mode: 'development',
+  mode: 'production',
   devtool: 'inline-source-map',
   entry: {
     'telnyx-rtc-sipjs': './src/telnyx-rtc-sipjs.js',
@@ -21,6 +21,9 @@ module.exports = {
       {
         test: /\.js$/,
         loader: 'babel-loader',
+        options: {
+          presets: ['@babel/preset-env'],
+        },
         exclude: /(node_modules)/,
       },
     ],

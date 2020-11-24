@@ -2,42 +2,49 @@ var path = require('path');
 
 module.exports = function (config) {
   config.set({
+    basePath: '',
+    frameworks: ['jasmine'],
+    browsers: ['Chrome'],
+    transports: ['websocket', 'polling'],
+    plugins: [
+      'karma-jasmine',
+      'karma-chrome-launcher',
+      'karma-webpack',
+      'karma-sourcemap-loader',
+    ],
+    phantomjsLauncher: {
+      exitOnResourceError: true,
+    },
+    colors: true,
     autoWatch: true,
     singleRun: true,
-
-    browsers: ['PhantomJS'],
-    frameworks: ['jasmine'],
-
-    preprocessors: {
-      './src/**/*.js': ['webpack', 'sourcemap'],
-    },
-
+    // logLevel: config.LOG_ERROR,
+    listenAddress: '0.0.0.0',
+    hostname: 'localhost',
+    port: 9876,
     files: [
       './node_modules/phantomjs-polyfill/bind-polyfill.js',
       { pattern: 'src/**/*.spec.js', watched: false },
     ],
-
     webpack: {
-      // module: {
-      //   loaders: [
-      //     {
-      //       test: /\.js$/,
-      //       loader: 'babel-loader',
-      //       include: [/src/],
-      //       options: {
-      //         presets: ['@babel/preset-env'],
-      //       },
-      //     },
-      //   ],
-      // },
+      module: {
+        rules: [
+          {
+            test: /\.js$/,
+            loader: 'babel-loader',
+            options: {
+              presets: ['@babel/preset-env'],
+            },
+            exclude: /(node_modules)/,
+          },
+        ],
+      },
     },
-
     webpackMiddleware: {
       stats: 'errors-only',
     },
-
-    phantomjsLauncher: {
-      exitOnResourceError: true,
+    preprocessors: {
+      './src/**/*.js': ['webpack', 'sourcemap'],
     },
   });
 };
