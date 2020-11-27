@@ -6,8 +6,7 @@ The Telnyx SIP-based WebRTC JS library powers up your web application with the a
 
 Check out the library in action in [this web dialer demo](https://webrtc.telnyx.com/).
 
-*Looking for more WebRTC features, JSON-RPC support or need to quickly get spun up with a React app?  Telnyx also has a robust [WebRTC SDK](https://github.com/team-telnyx/webrtc) available as a separate npm module.*
-
+_Looking for more WebRTC features, JSON-RPC support or need to quickly get spun up with a React app? Telnyx also has a robust [WebRTC SDK](https://github.com/team-telnyx/webrtc) available as a separate npm module._
 
 ## Installation
 
@@ -23,33 +22,31 @@ or using [yarn](https://yarnpkg.com/lang/en/):
 $ yarn add @telnyx/rtc-sipjs
 ```
 
-
 ## Usage
 
 Import [TelnyxDevice](https://github.com/team-telnyx/telnyx-rtc-sipjs/blob/master/docs/TelnyxDevice.md) in the module where you need it.
 
 ```javascript
-import { TelnyxDevice } from "@telnyx/rtc-sipjs";
+import { TelnyxDevice } from '@telnyx/rtc-sipjs';
 ```
-
 
 ### Example config and initiation
 
 ```javascript
 let config = {
-  host: "sip.telnyx.com",
-  port: "7443",
-  wsServers: "wss://sip.telnyx.com:7443",
-  displayName: "Phone User",
-  username: "testuser",
-  password: "testuserPassword",
-  stunServers: "stun:stun.telnyx.com:3843",
+  host: 'sip.telnyx.com',
+  port: '7443',
+  wsServers: 'wss://sip.telnyx.com:7443',
+  displayName: 'Phone User',
+  username: 'testuser',
+  password: 'testuserPassword',
+  stunServers: 'stun:stun.telnyx.com:3478',
   turnServers: {
-    urls: ["turn:turn.telnyx.com:3478?transport=tcp"],
-    username: "turnuser",
-    password: "turnpassword"
+    urls: ['turn:turn.telnyx.com:3478?transport=tcp'],
+    username: 'turnuser',
+    password: 'turnpassword',
   },
-  registrarServer: "sip:sip.telnyx.com:7443"
+  registrarServer: 'sip:sip.telnyx.com:7443',
 };
 
 let device = new TelnyxDevice(config);
@@ -58,14 +55,17 @@ let device = new TelnyxDevice(config);
 ### Example phone call
 
 ```javascript
-let activeCall = device.initiateCall("1235556789");
+let activeCall = device.initiateCall('1235556789');
 
-activeCall.on("connecting", () => {console.log("it's connecting!")});
-activeCall.on("accepted", () => {console.log("We're on a phone call!")});
+activeCall.on('connecting', () => {
+  console.log("it's connecting!");
+});
+activeCall.on('accepted', () => {
+  console.log("We're on a phone call!");
+});
 ```
 
 See the [TelnyxDevice](https://github.com/team-telnyx/telnyx-rtc-sipjs/blob/master/docs/TelnyxDevice.md) and [TelnyxCall](https://github.com/team-telnyx/telnyx-rtc-sipjs/blob/master/docs/TelnyxCall.md) for more details.
-
 
 ## Development
 
