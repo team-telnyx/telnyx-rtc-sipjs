@@ -69,6 +69,8 @@ See the [TelnyxDevice](https://github.com/team-telnyx/telnyx-rtc-sipjs/blob/mast
 
 ## Development
 
+This project targets Node.js 20+ and uses Yarn 4 (Berry). If you have Corepack enabled, running any `yarn` command will automatically install the correct release.
+
 ### Building the package
 
 When working on the package directly, please use [yarn](https://github.com/yarnpkg/yarn) instead of npm.

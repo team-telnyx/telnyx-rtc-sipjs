@@ -1,10 +1,10 @@
-var path = require('path');
+const path = require('path');
 
 module.exports = function (config) {
   config.set({
     basePath: '',
     frameworks: ['jasmine'],
-    browsers: ['Chrome'],
+    browsers: ['ChromeHeadless'],
     transports: ['websocket', 'polling'],
     plugins: [
       'karma-jasmine',
@@ -12,30 +12,35 @@ module.exports = function (config) {
       'karma-webpack',
       'karma-sourcemap-loader',
     ],
-    phantomjsLauncher: {
-      exitOnResourceError: true,
-    },
     colors: true,
-    autoWatch: true,
+    autoWatch: false,
     singleRun: true,
-    // logLevel: config.LOG_ERROR,
     listenAddress: '0.0.0.0',
     hostname: 'localhost',
     port: 9876,
-    files: [
-      './node_modules/phantomjs-polyfill/bind-polyfill.js',
-      { pattern: 'src/**/*.spec.js', watched: false },
-    ],
+    files: [{ pattern: 'src/**/*.spec.ts', watched: false }],
     webpack: {
+      mode: 'development',
+      devtool: 'inline-source-map',
+      resolve: {
+        extensions: ['.ts', '.js'],
+        alias: {
+          'sip.js$': path.resolve(__dirname, 'test/mocks/sip.ts'),
+        },
+      },
       module: {
         rules: [
           {
-            test: /\.js$/,
-            loader: 'babel-loader',
-            options: {
-              presets: ['@babel/preset-env'],
-            },
-            exclude: /(node_modules)/,
+            test: /\.ts$/,
+            use: [
+              {
+                loader: 'ts-loader',
+                options: {
+                  configFile: path.resolve(__dirname, 'tsconfig.test.json'),
+                },
+              },
+            ],
+            exclude: /node_modules/,
           },
         ],
       },
@@ -44,7 +49,7 @@ module.exports = function (config) {
       stats: 'errors-only',
     },
     preprocessors: {
-      './src/**/*.js': ['webpack', 'sourcemap'],
+      'src/**/*.spec.ts': ['webpack', 'sourcemap'],
     },
   });
 };

@@ -1,35 +1,36 @@
-var path = require('path');
-var webpack = require('webpack');
+const path = require('path');
 
 module.exports = {
   mode: 'development',
   devtool: 'inline-source-map',
   entry: {
-    'telnyx-rtc-sipjs': './src/telnyx-rtc-sipjs.js',
+    'telnyx-rtc-sipjs': './src/telnyx-rtc-sipjs.ts',
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: '[name].js',
     libraryTarget: 'umd',
     library: 'telnyx-rtc-sipjs',
-    // names the amd module:
     umdNamedDefine: true,
+    globalObject: "typeof self !== 'undefined' ? self : this",
+  },
+  resolve: {
+    extensions: ['.ts', '.js'],
   },
   module: {
     rules: [
       {
-        test: /\.js$/,
-        loader: 'babel-loader',
-        options: {
-          presets: ['@babel/preset-env'],
-        },
-        exclude: /(node_modules)/,
+        test: /\.ts$/,
+        use: [
+          {
+            loader: 'ts-loader',
+            options: {
+              configFile: path.resolve(__dirname, 'tsconfig.webpack.json'),
+            },
+          },
+        ],
+        exclude: /node_modules/,
       },
     ],
   },
-  plugins: [
-    new webpack.ProvidePlugin({
-      SIP: 'sip.js',
-    }),
-  ],
 };
