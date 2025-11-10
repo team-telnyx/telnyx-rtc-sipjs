@@ -25,6 +25,7 @@ export interface TelnyxDeviceConfig {
   registrarServer?: string;
   traceSip?: boolean;
   logLevel?: LogLevel;
+  remoteAudioElement?: HTMLAudioElement;
 }
 
 export interface RegisterOptions {
@@ -43,7 +44,6 @@ class TelnyxDevice extends EventEmitter {
   public readonly turnServers?: TurnServerConfig | TurnServerConfig[];
   public readonly registrarServer?: string;
 
-  private readonly _remoteAudio: HTMLAudioElement;
   private readonly _simpleUser: SimpleUser;
   private _activeCall?: TelnyxCall;
   private _connectionAttempts = 0;
@@ -73,7 +73,6 @@ class TelnyxDevice extends EventEmitter {
     this.turnServers = config.turnServers;
     this.registrarServer = config.registrarServer;
 
-    this._remoteAudio = this._createRemoteAudioElement();
     this._ensureConnectivityWithSipServer();
 
     const simpleUserOptions = this._buildSimpleUserOptions();
@@ -144,7 +143,7 @@ class TelnyxDevice extends EventEmitter {
       delegate,
       media: {
         constraints: { audio: true, video: false },
-        remote: { audio: this._remoteAudio },
+        remote: this.config.remoteAudioElement ? { audio: this.config.remoteAudioElement } : undefined,
       },
       userAgentOptions: {
         displayName: this.displayName,
@@ -275,18 +274,6 @@ class TelnyxDevice extends EventEmitter {
     });
 
     return servers;
-  }
-
-  private _createRemoteAudioElement(): HTMLAudioElement {
-    const audio = document.createElement('audio');
-    audio.className = 'telnyx-rtc-sipjs-remote-audio';
-    audio.autoplay = true;
-    (audio as HTMLMediaElement & { playsInline?: boolean }).playsInline = true;
-    const body = document.getElementsByTagName('body')[0];
-    if (body) {
-      body.appendChild(audio);
-    }
-    return audio;
   }
 
   private _ensureConnectivityWithSipServer(): void {
