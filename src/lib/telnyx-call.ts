@@ -1,173 +1,94 @@
-import SIP, { Session as SipSession, UA as SipUA } from 'sip.js';
-import type { MediaHandler } from 'sip.js';
+import { Invitation, Inviter, Session, SessionState, URI, UserAgent } from 'sip.js';
+import type { Body } from 'sip.js/lib/core/messages/body.js';
+import type { SessionDescriptionHandler as WebSessionDescriptionHandler } from 'sip.js/lib/platform/web/session-description-handler/session-description-handler.js';
+import type { SessionDescriptionHandlerOptions } from 'sip.js/lib/api/session-description-handler.js';
 import EventEmitter from 'es6-event-emitter';
 
 type CallStatus = 'starting' | 'initiating' | 'connected' | 'ended';
 type CallType = 'incoming' | 'outgoing' | '';
 
-export interface SessionWithMedia extends SipSession {
-  mediaHandler: MediaHandler & {
-    on(event: string, listener: (...args: any[]) => void): void;
-  };
-  accept(options?: Record<string, unknown>): void;
-  reject(options?: Record<string, unknown>): void;
-  terminate(options?: Record<string, unknown>): void;
-  mute(): void;
-  unmute(): void;
-  dtmf(digits: string): void;
-}
+type SessionLike = Invitation | Inviter;
+
+const AUDIO_CONSTRAINTS: MediaStreamConstraints = { audio: true, video: false };
+const DTMF_CONTENT_TYPE = 'application/dtmf-relay';
 
 export class TelnyxCall extends EventEmitter {
   private _mute = false;
   private _status: CallStatus = 'starting';
   private _callType: CallType = '';
-  private _session!: SessionWithMedia;
+  private _session?: SessionLike;
   private readonly _docBody: HTMLElement;
   private audioElement?: HTMLAudioElement;
+  private _remoteTrackCleanup?: () => void;
+  private readonly _sessionStateListener = (state: SessionState) => this._handleSessionStateChange(state);
 
-  constructor(private readonly UA: SipUA) {
+  constructor(private readonly userAgent: UserAgent) {
     super();
     this._docBody = document.getElementsByTagName('body')[0];
-    this.UA.start();
   }
 
-  /**
-   * Make a call to a phone number
-   *
-   * @param {URI} inviteUri - A SIP.js URI that includes the phone number to connect to
-   */
   makeCall(inviteUri: string): void {
+    const targetUri = this._parseUri(inviteUri);
+    const inviter = new Inviter(this.userAgent, targetUri, {
+      sessionDescriptionHandlerOptions: this._sessionDescriptionOptions(),
+    });
+
     this._callType = 'outgoing';
-    this._session = this.UA.invite(inviteUri, this._getAudioElement()) as SessionWithMedia;
-    this._attachSessionEvents();
+    this._setSession(inviter);
+    this.trigger('connecting');
+    this._status = 'initiating';
+
+    inviter
+      .invite({
+        requestDelegate: {
+          onProgress: (response) => this.trigger('progress', response),
+          onReject: (response) => {
+            this._status = 'ended';
+            this.trigger('rejected', response);
+          },
+          onRedirect: (response) => {
+            this._status = 'ended';
+            this.trigger('rejected', response);
+          },
+        },
+      })
+      .catch((error) => {
+        this._status = 'ended';
+        this.trigger('failed', error);
+      });
   }
 
-  /**
-   * Set up to handle an incoming call.
-   * The calling function will then be able to accept or reject the call.
-   *
-   * @param {Session} session - A SIP.js Session, specifically of the SIP.ServerContext type
-   */
-  incomingCall(session: SessionWithMedia): void {
+  incomingCall(session: Invitation): void {
     this._callType = 'incoming';
-    this._session = session;
-    this._attachSessionEvents();
-  }
-
-  private _getAudioElement(): HTMLAudioElement {
-    if (!this.audioElement) {
-      this.audioElement = document.createElement('audio');
-      this.audioElement.className = 'telnyx-rtc-sipjs-remote-audio';
-      this._docBody.appendChild(this.audioElement);
-    }
-    return this.audioElement;
-  }
-
-  private _attachSessionEvents(): void {
-    if (!this._session) {
-      return;
-    }
-
-    this._session.on('connecting', () => {
-      this.trigger('connecting');
-      this._status = 'initiating';
-    });
-
-    this._session.on('progress', (response: unknown) => this.trigger('progress', response));
-
-    this._session.on('accepted', (data: unknown) => {
-      this.trigger('accepted', data);
-      this._status = 'connected';
-    });
-
-    this._session.on('dtmf', (request: unknown, dtmf: string) => this.trigger('dtmf', request, dtmf));
-
-    this._session.on('muted', (data: unknown) => this.trigger('muted', data));
-    this._session.on('unmuted', (data: unknown) => this.trigger('unmuted', data));
-
-    this._session.on('cancel', () => {
-      this.trigger('cancel');
-      this._status = 'ended';
-    });
-
-    this._session.on('refer', () => {
-      this.trigger('rejected');
-    });
-
-    this._session.on('replaced', (newSession: unknown) => {
-      this.trigger('rejected', newSession);
-    });
-
-    this._session.on('rejected', (response: unknown, cause: unknown) => {
-      this.trigger('rejected', response, cause);
-      this._status = 'ended';
-    });
-
-    this._session.on('failed', (response: unknown, cause: unknown) => {
-      this.trigger('failed', response, cause);
-      this._status = 'ended';
-    });
-
-    this._session.on('terminated', (message: unknown, cause: unknown) => {
-      this.trigger('terminated', message, cause);
-      this._status = 'ended';
-    });
-
-    this._session.on('bye', () => {
-      this.trigger('bye');
-      this._status = 'ended';
-    });
-
-    const mediaHandler = this._session.mediaHandler;
-
-    mediaHandler.on('userMediaRequest', (constraints: unknown) => {
-      this.trigger('userMediaRequest', constraints);
-    });
-
-    mediaHandler.on('userMedia', (stream: MediaStream) => {
-      this.trigger('userMedia', stream);
-    });
-
-    mediaHandler.on('userMediaFailed', (error: unknown) => {
-      this.trigger('userMediaFailed', error);
-    });
-
-    mediaHandler.on('iceGathering', () => this.trigger('iceGathering'));
-    mediaHandler.on('iceCandidate', (candidate: unknown) => this.trigger('iceCandidate', candidate));
-    mediaHandler.on('iceGatheringComplete', () => this.trigger('iceGatheringComplete'));
-    mediaHandler.on('iceConnection', () => this.trigger('iceConnection'));
-    mediaHandler.on('iceConnectionChecking', () => this.trigger('iceConnectionChecking'));
-    mediaHandler.on('iceConnectionConnected', () => this.trigger('iceConnectionConnected'));
-    mediaHandler.on('iceConnectionCompleted', () => this.trigger('iceConnectionCompleted'));
-    mediaHandler.on('iceConnectionFailed', () => this.trigger('iceConnectionFailed'));
-    mediaHandler.on('iceConnectionDisconnected', () => this.trigger('iceConnectionDisconnected'));
-    mediaHandler.on('iceConnectionClosed', () => this.trigger('iceConnectionClosed'));
-    mediaHandler.on('getDescription', (sdpWrapper: unknown) => this.trigger('getDescription', sdpWrapper));
-    mediaHandler.on('setDescription', (sdpWrapper: unknown) => this.trigger('setDescription', sdpWrapper));
-    mediaHandler.on('dataChannel', (dataChannel: unknown) => this.trigger('dataChannel', dataChannel));
-    mediaHandler.on('addStream', (stream: MediaStream) => this.trigger('addStream', stream));
+    session.sessionDescriptionHandlerOptions = this._sessionDescriptionOptions();
+    this._setSession(session);
   }
 
   accept(): void {
-    if (this._callType !== 'incoming' || !this._session) {
+    if (!(this._session instanceof Invitation)) {
       console.error('accept() method is only valid on incoming calls');
       return;
     }
 
-    this._session.accept({
-      media: {
-        constraints: { audio: true, video: false },
-        render: { remote: this._getAudioElement() },
-      },
-    });
+    this._session
+      .accept({
+        sessionDescriptionHandlerOptions: this._sessionDescriptionOptions(),
+      })
+      .catch((error) => {
+        this._status = 'ended';
+        this.trigger('failed', error);
+      });
   }
 
   reject(): void {
-    if (this._callType !== 'incoming' || !this._session) {
+    if (!(this._session instanceof Invitation)) {
       console.error('reject() method is only valid on incoming calls');
       return;
     }
-    this._session.reject();
+    this._session.reject().then(() => {
+      this._status = 'ended';
+      this.trigger('rejected');
+    });
   }
 
   get request(): Record<string, unknown> | false {
@@ -175,12 +96,12 @@ export class TelnyxCall extends EventEmitter {
       return false;
     }
 
-    if (this._callType === 'incoming') {
-      return this._session.transaction?.request ?? false;
+    if (this._callType === 'incoming' && this._session instanceof Invitation) {
+      return this._session.request as unknown as Record<string, unknown>;
     }
 
-    if (this._callType === 'outgoing') {
-      return this._session.request ?? false;
+    if (this._callType === 'outgoing' && this._session instanceof Inviter) {
+      return this._session.request as unknown as Record<string, unknown>;
     }
 
     return false;
@@ -207,26 +128,25 @@ export class TelnyxCall extends EventEmitter {
   }
 
   disconnect(): void {
-    if (this._session) {
-      this._session.terminate();
+    if (!this._session) {
+      return;
     }
+    this._session.bye().catch(() => {
+      // ignore; call might already be terminated
+    });
   }
 
   shutdown(): void {
-    this.UA.stop();
+    void this.userAgent.stop();
   }
 
   mute(isMute: boolean): void {
     this._mute = isMute;
-    if (!this._session) {
-      return;
-    }
-
-    if (this._mute) {
-      this._session.mute();
-    } else {
-      this._session.unmute();
-    }
+    const handler = this._getWebSessionHandler();
+    handler?.localMediaStream.getAudioTracks().forEach((track) => {
+      track.enabled = !isMute;
+    });
+    this.trigger(isMute ? 'muted' : 'unmuted');
   }
 
   isMuted(): boolean {
@@ -234,13 +154,145 @@ export class TelnyxCall extends EventEmitter {
   }
 
   sendDigits(digits: string): void {
+    if (!digits) {
+      return;
+    }
+    const handler = this._getWebSessionHandler();
+    if (handler && handler.sendDtmf(digits)) {
+      this.trigger('dtmf', undefined, digits);
+      return;
+    }
     if (!this._session) {
       return;
     }
-    this._session.dtmf(digits);
+    const body: Body = {
+      contentDisposition: 'render',
+      contentType: DTMF_CONTENT_TYPE,
+      content: `Signal=${digits}\r\nDuration=160`,
+    };
+    this._session
+      .info({ requestOptions: { body } })
+      .then(() => this.trigger('dtmf', undefined, digits))
+      .catch((error) => this.trigger('failed', error));
   }
 
   status(): CallStatus {
     return this._status;
+  }
+
+  private _parseUri(uri: string): URI {
+    const parsed = UserAgent.makeURI(uri);
+    if (!parsed) {
+      throw new Error(`Invalid SIP URI: ${uri}`);
+    }
+    return parsed;
+  }
+
+  private _sessionDescriptionOptions(): SessionDescriptionHandlerOptions {
+    return {
+      constraints: AUDIO_CONSTRAINTS,
+    };
+  }
+
+  private _setSession(session: SessionLike): void {
+    this._cleanupSession();
+    this._session = session;
+    session.stateChange.addListener(this._sessionStateListener);
+    session.delegate = Object.assign({}, session.delegate, {
+      onBye: () => {
+        this._status = 'ended';
+        this.trigger('bye');
+      },
+      onCancel: () => {
+        this._status = 'ended';
+        this.trigger('cancel');
+      },
+      onInfo: (info: { request: { body?: Body } }) => {
+        const payload = info.request.body;
+        if (payload && payload.contentType === DTMF_CONTENT_TYPE) {
+          const toneMatch = /Signal=([0-9A-D#*])/i.exec(payload.content);
+          if (toneMatch) {
+            this.trigger('dtmf', info.request, toneMatch[1]);
+          }
+        }
+      },
+      onNotify: (notification: unknown) => {
+        this.trigger('notification', notification);
+      },
+    });
+  }
+
+  private _handleSessionStateChange(state: SessionState): void {
+    switch (state) {
+      case SessionState.Initial:
+      case SessionState.Establishing:
+        if (this._status !== 'connected') {
+          this._status = 'initiating';
+          this.trigger('connecting');
+        }
+        break;
+      case SessionState.Established:
+        this._status = 'connected';
+        this._attachRemoteMedia();
+        this.trigger('accepted');
+        break;
+      case SessionState.Terminated:
+        this._status = 'ended';
+        this.trigger('terminated');
+        this._cleanupSession();
+        break;
+      default:
+        break;
+    }
+  }
+
+  private _attachRemoteMedia(): void {
+    const handler = this._getWebSessionHandler();
+    if (!handler) {
+      return;
+    }
+
+    const remoteStream = handler.remoteMediaStream;
+    const attach = () => {
+      const audio = this._getAudioElement();
+      if (audio.srcObject !== remoteStream) {
+        audio.srcObject = remoteStream;
+        void audio.play().catch(() => undefined);
+      }
+    };
+    attach();
+
+    const addTrackHandler = () => attach();
+    remoteStream.addEventListener('addtrack', addTrackHandler);
+
+    this._remoteTrackCleanup = () => {
+      remoteStream.removeEventListener('addtrack', addTrackHandler);
+    };
+  }
+
+  private _getAudioElement(): HTMLAudioElement {
+    if (!this.audioElement) {
+      this.audioElement = document.createElement('audio');
+      this.audioElement.className = 'telnyx-rtc-sipjs-remote-audio';
+      this.audioElement.autoplay = true;
+      (this.audioElement as HTMLMediaElement & { playsInline?: boolean }).playsInline = true;
+      this._docBody.appendChild(this.audioElement);
+    }
+    return this.audioElement;
+  }
+
+  private _cleanupSession(): void {
+    if (this._session) {
+      this._session.stateChange.removeListener(this._sessionStateListener);
+      this._session = undefined;
+    }
+    if (this._remoteTrackCleanup) {
+      this._remoteTrackCleanup();
+      this._remoteTrackCleanup = undefined;
+    }
+  }
+
+  private _getWebSessionHandler(): WebSessionDescriptionHandler | undefined {
+    return this._session?.sessionDescriptionHandler as WebSessionDescriptionHandler | undefined;
   }
 }

@@ -1,8 +1,15 @@
-import SIP, { RegisterOptions } from 'sip.js';
-import type { Session as SipSession, UserAgentConfiguration, UA as SipUA } from 'sip.js';
+import {
+  Invitation,
+  Registerer,
+  RegistererOptions,
+  RegistererState,
+  TransportState,
+  URI,
+  UserAgent,
+  UserAgentOptions,
+} from 'sip.js';
 import EventEmitter from 'es6-event-emitter';
 import { TelnyxCall } from './telnyx-call';
-import type { SessionWithMedia } from './telnyx-call';
 
 export type LogLevel = 'debug' | 'log' | 'warn' | 'error' | 'off';
 
@@ -26,6 +33,16 @@ export interface TelnyxDeviceConfig {
   logLevel?: LogLevel;
 }
 
+export interface RegisterOptions {
+  extraHeaders?: string[];
+}
+
+interface ExtendedTransportOptions {
+  server: string;
+  traceSip?: boolean;
+  wsServers?: string[] | string;
+}
+
 class TelnyxDevice extends EventEmitter {
   public readonly config: TelnyxDeviceConfig;
   public readonly host: string;
@@ -37,8 +54,10 @@ class TelnyxDevice extends EventEmitter {
   public readonly stunServers?: string[];
   public readonly turnServers?: TurnServerConfig | TurnServerConfig[];
   public readonly registrarServer?: string;
-  public _userAgent: SipUA;
+  public _userAgent: UserAgent;
   private _activeCall?: TelnyxCall;
+  private _registerer?: Registerer;
+  private _connectionAttempts = 0;
 
   constructor(config: TelnyxDeviceConfig) {
     super();
@@ -66,73 +85,65 @@ class TelnyxDevice extends EventEmitter {
 
     this._ensureConnectivityWithSipServer();
 
-    const uri = new SIP.URI('sip', this.username, this.host, this.port).toString();
+    const userUri = this._buildUserUri(this.username);
+    const iceServers = this._buildIceServers();
+    const transportServer = this._resolveTransportServer();
+    const transportOptions: ExtendedTransportOptions = {
+      server: transportServer,
+      traceSip: Boolean(config.traceSip),
+    };
+    if (this.wsServers && this.wsServers.length > 0) {
+      transportOptions.wsServers = this.wsServers;
+    }
 
-    const sipUAConfig: UserAgentConfiguration = {
-      uri,
-      wsServers: this.wsServers,
-      authorizationUser: this.username,
-      password: this.password,
+    const userAgentOptions: Partial<UserAgentOptions> = {
+      uri: userUri,
+      authorizationUsername: this.username,
+      authorizationPassword: this.password,
       displayName: this.displayName,
-      stunServers: this.stunServers,
-      turnServers: this.turnServers,
-      registrarServer: this.registrarServer,
+      transportOptions,
+      delegate: {
+        onConnect: () => {
+          this._connectionAttempts = 0;
+          this.trigger('wsConnected');
+        },
+        onDisconnect: () => {
+          this.trigger('wsDisconnected');
+        },
+        onInvite: (invitation: Invitation) => this._handleIncomingInvite(invitation),
+        onMessage: (message: unknown) => this.trigger('message', { message }),
+      },
     };
 
-    if (config.traceSip) {
-      sipUAConfig.traceSip = true;
+    if (iceServers.length > 0) {
+      userAgentOptions.sessionDescriptionHandlerFactoryOptions = {
+        peerConnectionConfiguration: { iceServers },
+      };
     }
-    if (config.logLevel) {
-      if (config.logLevel === 'off') {
-        sipUAConfig.log = { builtinEnabled: false };
-      } else {
-        sipUAConfig.log = { level: config.logLevel };
+
+    if (config.logLevel === 'off') {
+      userAgentOptions.logBuiltinEnabled = false;
+    } else if (config.logLevel) {
+      userAgentOptions.logLevel = config.logLevel;
+    }
+
+    this._userAgent = new UserAgent(userAgentOptions);
+
+    const transport = this._userAgent.transport;
+    transport.stateChange.addListener((state) => {
+      if (state === TransportState.Connecting) {
+        this._connectionAttempts += 1;
+        this.trigger('wsConnecting', { attempts: this._connectionAttempts });
       }
-    }
-
-    this._userAgent = new SIP.UA(sipUAConfig);
-
-    this._userAgent.on('connecting', (args: { attempts?: number } = {}) => {
-      this.trigger('wsConnecting', { attempts: args.attempts ?? 0 });
-    });
-
-    this._userAgent.on('connected', () => {
-      this.trigger('wsConnected');
-    });
-
-    this._userAgent.on('disconnected', () => {
-      this.trigger('wsDisconnected');
-    });
-
-    this._userAgent.on('registered', () => {
-      this.trigger('registered');
-    });
-
-    this._userAgent.on('unregistered', (response: unknown, cause: unknown) => {
-      this.trigger('unregistered', { cause, response });
-    });
-
-    this._userAgent.on('registrationFailed', (cause: unknown, response: unknown) => {
-      this.trigger('registrationFailed', { cause, response });
-    });
-
-    this._userAgent.on('invite', (session: SipSession) => {
-      this._activeCall = new TelnyxCall(this._userAgent);
-      this._activeCall.incomingCall(session as SessionWithMedia);
-      this.trigger('incomingInvite', { activeCall: this._activeCall });
-    });
-
-    this._userAgent.on('message', (message: unknown) => {
-      this.trigger('message', { message });
     });
   }
 
-  startWS(): void {
-    this._userAgent.start();
+  startWS(): Promise<void> {
+    return this._userAgent.start();
   }
 
-  stopWS(): void {
-    this._userAgent.stop();
+  stopWS(): Promise<void> {
+    return this._userAgent.stop();
   }
 
   isWSConnected(): boolean {
@@ -140,26 +151,120 @@ class TelnyxDevice extends EventEmitter {
   }
 
   register(options?: RegisterOptions): void {
-    this._userAgent.register(options);
+    const registerer = this._ensureRegisterer();
+    registerer
+      .register({
+        requestOptions: options?.extraHeaders ? { extraHeaders: options.extraHeaders } : undefined,
+        requestDelegate: {
+          onReject: (response) => {
+            this.trigger('registrationFailed', { cause: response.message.reasonPhrase, response });
+          },
+        },
+      })
+      .catch((error) => this.trigger('registrationFailed', { cause: error }));
   }
 
   unregister(options?: RegisterOptions): void {
-    this._userAgent.unregister(options);
+    if (!this._registerer) {
+      return;
+    }
+    this._registerer
+      .unregister({
+        requestOptions: options?.extraHeaders ? { extraHeaders: options.extraHeaders } : undefined,
+      })
+      .catch((error) => this.trigger('registrationFailed', { cause: error }));
   }
 
   isRegistered(): boolean {
-    return this._userAgent.isRegistered();
+    return this._registerer?.state === RegistererState.Registered;
   }
 
   initiateCall(phoneNumber: string): TelnyxCall {
-    const uri = new SIP.URI('sip', phoneNumber, this.host, this.port).toString();
+    const uri = this._buildUserUri(phoneNumber);
     this._activeCall = new TelnyxCall(this._userAgent);
-    this._activeCall.makeCall(uri);
+    this._activeCall.makeCall(uri.toString());
     return this._activeCall;
   }
 
   activeCall(): TelnyxCall | undefined {
     return this._activeCall;
+  }
+
+  private _handleIncomingInvite(invitation: Invitation): void {
+    this._activeCall = new TelnyxCall(this._userAgent);
+    this._activeCall.incomingCall(invitation);
+    this.trigger('incomingInvite', { activeCall: this._activeCall });
+  }
+
+  private _ensureRegisterer(): Registerer {
+    if (!this._registerer) {
+      const options: RegistererOptions = {};
+      if (this.registrarServer) {
+        const registrarUri = UserAgent.makeURI(this.registrarServer);
+        if (registrarUri) {
+          options.registrar = registrarUri;
+        }
+      }
+      this._registerer = new Registerer(this._userAgent, options);
+      this._registerer.stateChange.addListener((state) => {
+        if (state === RegistererState.Registered) {
+          this.trigger('registered');
+        } else if (state === RegistererState.Unregistered) {
+          this.trigger('unregistered', { cause: null, response: null });
+        } else if (state === RegistererState.Terminated) {
+          this.trigger('registrationFailed', { cause: 'terminated' });
+        }
+      });
+    }
+    return this._registerer;
+  }
+
+  private _buildUserUri(user: string): URI {
+    const portSuffix = this.port ? `:${this.port}` : '';
+    const uriString = `sip:${user}@${this.host}${portSuffix}`;
+    const uri = UserAgent.makeURI(uriString);
+    if (!uri) {
+      throw new Error(`Invalid SIP URI: ${uriString}`);
+    }
+    return uri;
+  }
+
+  private _resolveTransportServer(): string {
+    if (this.wsServers && this.wsServers.length > 0) {
+      return this.wsServers[0];
+    }
+    const scheme = 'wss';
+    return `${scheme}://${this.host}${this.port ? `:${this.port}` : ''}`;
+  }
+
+  private _buildIceServers(): RTCIceServer[] {
+    const servers: RTCIceServer[] = [];
+    if (this.stunServers) {
+      this.stunServers.forEach((server) => {
+        if (server) {
+          servers.push({ urls: server });
+        }
+      });
+    }
+
+    const turnConfigs = this.turnServers
+      ? Array.isArray(this.turnServers)
+        ? this.turnServers
+        : [this.turnServers]
+      : [];
+
+    turnConfigs.forEach((config) => {
+      if (!config) {
+        return;
+      }
+      servers.push({
+        urls: config.urls,
+        username: config.username,
+        credential: config.password,
+      });
+    });
+
+    return servers;
   }
 
   private _ensureConnectivityWithSipServer(): void {

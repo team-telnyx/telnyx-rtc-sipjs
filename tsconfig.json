@@ -15,7 +15,6 @@
     "typeRoots": ["./types", "./node_modules/@types"],
     "baseUrl": ".",
     "paths": {
-      "sip.js": ["types/sip.js"],
       "es6-event-emitter": ["types/es6-event-emitter"]
     }
   },
