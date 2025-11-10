@@ -24,48 +24,54 @@ $ yarn add @telnyx/rtc-sipjs
 
 ## Usage
 
-Import [TelnyxDevice](https://github.com/team-telnyx/telnyx-rtc-sipjs/blob/master/docs/TelnyxDevice.md) in the module where you need it.
+This package now builds directly on top of the SIP.js [`SimpleUser`](https://sipjs.com/guides/simple-user/) helper. You provide configuration and your own DOM/audio wiring, the library keeps the original `TelnyxDevice`/`TelnyxCall` event‑driven API layered on top of SimpleUser.
 
-```javascript
+Import [TelnyxDevice](https://github.com/team-telnyx/telnyx-rtc-sipjs/blob/master/docs/TelnyxDevice.md) where you need it:
+
+```ts
 import { TelnyxDevice } from '@telnyx/rtc-sipjs';
 ```
 
-### Example config and initiation
+### Creating a device
 
-```javascript
-let config = {
+```ts
+const device = new TelnyxDevice({
   host: 'sip.telnyx.com',
   port: '7443',
   wsServers: 'wss://sip.telnyx.com:7443',
-  displayName: 'Phone User',
   username: 'testuser',
   password: 'testuserPassword',
-  stunServers: 'stun:stun.telnyx.com:3478',
+  displayName: 'Phone User',
+  stunServers: ['stun:stun.telnyx.com:3478'],
   turnServers: {
     urls: ['turn:turn.telnyx.com:3478?transport=tcp'],
     username: 'turnuser',
     password: 'turnpassword',
   },
   registrarServer: 'sip:sip.telnyx.com:7443',
-};
+  // supply your own audio element if you want TelnyxCall to attach media automatically
+  remoteAudioElement: document.getElementById('remoteAudio') as HTMLAudioElement,
+});
 
-let device = new TelnyxDevice(config);
+await device.startWS();
+device.register();
 ```
 
-### Example phone call
+### Placing and handling calls
 
-```javascript
-let activeCall = device.initiateCall('1235556789');
+```ts
+const call = device.initiateCall('1235556789');
+call.on('connecting', () => console.log('dialing…'));
+call.on('accepted', () => console.log('call connected'));
 
-activeCall.on('connecting', () => {
-  console.log("it's connecting!");
-});
-activeCall.on('accepted', () => {
-  console.log("We're on a phone call!");
+device.on('incomingInvite', ({ activeCall }) => {
+  activeCall.on('accepted', () => console.log('incoming call answered'));
+  // decide when to answer or reject
+  activeCall.accept();
 });
 ```
 
-See the [TelnyxDevice](https://github.com/team-telnyx/telnyx-rtc-sipjs/blob/master/docs/TelnyxDevice.md) and [TelnyxCall](https://github.com/team-telnyx/telnyx-rtc-sipjs/blob/master/docs/TelnyxCall.md) for more details.
+Because TelnyxDevice is powered by SimpleUser, you can follow the SIP.js [SimpleUser guide](https://sipjs.com/guides/simple-user/) for expectations around media streams, registration, and delegate callbacks—the library simply re-exposes those behaviours through the existing Telnyx event surface so your legacy integrations continue to function.
 
 ## Development
 
