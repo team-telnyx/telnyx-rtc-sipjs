@@ -1,12 +1,22 @@
 #### 2.0.0
 
+##### Breaking Changes
+
+* **Core:** Rebuilt `TelnyxDevice`/`TelnyxCall` on top of SIP.js [`SimpleUser`](https://sipjs.com/guides/simple-user/) and converted the library to TypeScript. The legacy SIP.js UA wrapper has been removed, so applications must adopt the SimpleUser-backed event surface exposed by the library.
+
 ##### New Features
 
+* **TelnyxDevice:** Accept an optional `remoteAudioElement` so the remote media stream can be auto-attached by the library when calls connect.
+* **TelnyxDevice:** Support passing SIP headers via `register({ extraHeaders })` and `unregister({ extraHeaders })` to meet environments that require custom metadata on REGISTER traffic.
 * **TelnyxDevice:** Default STUN/TURN servers to the same configuration used by [`@telnyx/webrtc`](https://github.com/team-telnyx/webrtc).
+
+##### Dependency Updates
+
+* **sip.js:** Upgrade to 0.21.2 to pick up the SimpleUser helper and modern WebRTC fixes.
 
 ##### Documentation Changes
 
-* **README/docs:** Document the shared Telnyx ICE server defaults.
+* **README/docs:** Document the SimpleUser-based architecture, the new `remoteAudioElement` option, and the shared Telnyx ICE server defaults.
 
 #### 1.3.6 (2017-5-19)
 
