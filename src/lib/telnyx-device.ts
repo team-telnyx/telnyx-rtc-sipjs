@@ -28,6 +28,16 @@ export interface TelnyxDeviceConfig {
   remoteAudioElement?: HTMLAudioElement;
 }
 
+export const DEFAULT_STUN_SERVERS = ['stun:stun.telnyx.com:3478', 'stun:stun.l.google.com:19302'];
+
+export const DEFAULT_TURN_SERVERS: ReadonlyArray<TurnServerConfig> = [
+  {
+    urls: 'turn:turn.telnyx.com:3478?transport=tcp',
+    username: 'testuser',
+    password: 'testpassword',
+  },
+];
+
 export interface RegisterOptions {
   extraHeaders?: string[];
 }
@@ -69,8 +79,18 @@ class TelnyxDevice extends EventEmitter {
     this.username = config.username;
     this.password = config.password;
     this.displayName = config.displayName || config.username;
-    this.stunServers = arrayify(config.stunServers);
-    this.turnServers = config.turnServers;
+    const configuredStunServers = arrayify(config.stunServers);
+    this.stunServers = configuredStunServers ? configuredStunServers : DEFAULT_STUN_SERVERS.slice();
+
+    if (typeof config.turnServers === 'undefined') {
+      this.turnServers = DEFAULT_TURN_SERVERS.map((server) => ({
+        urls: Array.isArray(server.urls) ? server.urls.slice() : server.urls,
+        username: server.username,
+        password: server.password,
+      }));
+    } else {
+      this.turnServers = config.turnServers;
+    }
     this.registrarServer = config.registrarServer;
 
     this._ensureConnectivityWithSipServer();

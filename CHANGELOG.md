@@ -1,3 +1,13 @@
+#### 2.0.0
+
+##### New Features
+
+* **TelnyxDevice:** Default STUN/TURN servers to the same configuration used by [`@telnyx/webrtc`](https://github.com/team-telnyx/webrtc).
+
+##### Documentation Changes
+
+* **README/docs:** Document the shared Telnyx ICE server defaults.
+
 #### 1.3.6 (2017-5-19)
 
 ##### Bug Fixes
@@ -112,4 +122,3 @@
 ##### Refactors
 
 * **SIP.js Integration:** Plain import sip.js and use jasmine more effectively to fake it out in tests ([4b9d13ff](https://github.com/team-telnyx/telnyx-rtc-sipjs/commit/4b9d13ff0e2e9ffe3c00b3b28dc2f195a3bc3be8))
-

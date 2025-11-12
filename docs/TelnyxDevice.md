@@ -39,8 +39,8 @@ Create a new TelnyxDevice.
 | config.username | <code>String</code> | The username for the SIP server |
 | config.password | <code>String</code> | The passweord for the SIP server |
 | config.displayName | <code>String</code> | The human readable name passed in the from field. Will be used for Caller ID |
-| config.stunServers | <code>String</code> | URI(s) for how to connect to the STUN servers. Format `stun:stun.telnyx.com:8000`. An array of strings is also accepted. |
-| config.turnServers | <code>Object</code> | Details for how to connect to the TURN servers. An array of objects is also accepted. |
+| config.stunServers | <code>String</code> | URI(s) for how to connect to the STUN servers. Format `stun:stun.telnyx.com:8000`. An array of strings is also accepted. Defaults to `stun:stun.telnyx.com:3478` and `stun:stun.l.google.com:19302` if omitted. |
+| config.turnServers | <code>Object</code> | Details for how to connect to the TURN servers. An array of objects is also accepted. Defaults to `turn:turn.telnyx.com:3478?transport=tcp` with username `testuser` and password `testpassword`. |
 | config.turnServers.urls | <code>String</code> | URI(s) for the TURN server(s). Format `turn:turn.telnyx.com:8000?transport=tcp`. An array of strings is also accepted. |
 | config.turnServers.username | <code>String</code> | Username to authenticate on TURN server(s) |
 | config.turnServers.password | <code>String</code> | Password to authenticate on TURN server(s) |
@@ -212,4 +212,3 @@ message event
 | Name | Type | Description |
 | --- | --- | --- |
 | message | <code>object</code> | Contains the SIP message sent and server context necessary to receive and send replies. |
-

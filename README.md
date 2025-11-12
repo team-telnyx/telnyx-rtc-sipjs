@@ -42,12 +42,14 @@ const device = new TelnyxDevice({
   username: 'testuser',
   password: 'testuserPassword',
   displayName: 'Phone User',
-  stunServers: ['stun:stun.telnyx.com:3478'],
-  turnServers: {
-    urls: ['turn:turn.telnyx.com:3478?transport=tcp'],
-    username: 'turnuser',
-    password: 'turnpassword',
-  },
+  stunServers: ['stun:stun.telnyx.com:3478', 'stun:stun.l.google.com:19302'],
+  turnServers: [
+    {
+      urls: 'turn:turn.telnyx.com:3478?transport=tcp',
+      username: 'testuser',
+      password: 'testpassword',
+    },
+  ],
   registrarServer: 'sip:sip.telnyx.com:7443',
   // supply your own audio element if you want TelnyxCall to attach media automatically
   remoteAudioElement: document.getElementById('remoteAudio') as HTMLAudioElement,
@@ -56,6 +58,8 @@ const device = new TelnyxDevice({
 await device.startWS();
 device.register();
 ```
+
+`stunServers` and `turnServers` now default to the same Telnyx-managed ICE infrastructure that powers the [`@telnyx/webrtc`](https://github.com/team-telnyx/webrtc) SDK, so you can omit those fields unless you need to override them.
 
 ### Placing and handling calls
 

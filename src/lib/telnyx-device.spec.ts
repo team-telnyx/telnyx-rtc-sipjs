@@ -1,4 +1,9 @@
-import { TelnyxDevice, TelnyxDeviceConfig } from './telnyx-device';
+import {
+  TelnyxDevice,
+  TelnyxDeviceConfig,
+  DEFAULT_STUN_SERVERS,
+  DEFAULT_TURN_SERVERS,
+} from './telnyx-device';
 
 describe('telnyx device', () => {
   let config: TelnyxDeviceConfig;
@@ -50,5 +55,13 @@ describe('telnyx device', () => {
 
     expect(makeCall).not.toThrow();
     expect(device.activeCall()).toBeTruthy();
+  });
+
+  it('defaults stun/turn servers to the Telnyx WebRTC configuration', () => {
+    const { stunServers, turnServers, ...rest } = config;
+    const device = new TelnyxDevice(rest as TelnyxDeviceConfig);
+
+    expect(device.stunServers).toEqual(DEFAULT_STUN_SERVERS);
+    expect(device.turnServers).toEqual(DEFAULT_TURN_SERVERS);
   });
 });
