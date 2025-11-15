@@ -4,7 +4,7 @@ module.exports = function (config) {
   config.set({
     basePath: '',
     frameworks: ['jasmine'],
-    browsers: ['Chrome'],
+    browsers: ['ChromeHeadless'],
     transports: ['websocket', 'polling'],
     plugins: [
       'karma-jasmine',
@@ -21,7 +21,7 @@ module.exports = function (config) {
     // logLevel: config.LOG_ERROR,
     listenAddress: '0.0.0.0',
     hostname: 'localhost',
-    port: 9876,
+    port: 9877,
     files: [
       './node_modules/phantomjs-polyfill/bind-polyfill.js',
       { pattern: 'src/**/*.spec.js', watched: false },

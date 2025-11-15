@@ -1,4 +1,4 @@
-import SIP  from 'sip.js';
+import { Inviter, Registerer, RegistererState, UserAgent, Web } from 'sip.js';
 import EventEmitter from 'es6-event-emitter';
 import { TelnyxCall } from './telnyx-call';
 
@@ -29,7 +29,7 @@ class TelnyxDevice extends EventEmitter {
   * @param {String} config.logLevel One of "debug", "log", "warn", "error", "off".  default is "log"
 
   */
-  constructor(config) {
+  constructor(config, dependencies = {}) {
     super();
     if (!config || typeof(config) !== 'object') { throw new TypeError("TelnyxDevice: Missing config"); }
     if (!config.host) { throw new TypeError("TelnyxDevice: Missing 'host' parameter"); }
@@ -37,151 +37,86 @@ class TelnyxDevice extends EventEmitter {
 
     this.config = config;
 
+    // Allow dependency injection for testing
+    this._UserAgent = dependencies.UserAgent || UserAgent;
+    this._Registerer = dependencies.Registerer || Registerer;
+    this._Inviter = dependencies.Inviter || Inviter;
+    this._Web = dependencies.Web || Web;
+
     this.host = config.host;
     this.port = config.port;
-    this.wsServers = arrayify(config.wsServers);
+    this.wsServers = arrayify(config.wsServers).filter(Boolean);
+    this._transportServers = this._buildTransportServerList();
+    this._currentTransportIndex = 0;
+    this._activeTransportServer = this._transportServers[0];
     this.username = config.username;
     this.password = config.password;
     this.displayName = config.displayName || config.username;
-    this.stunServers = arrayify(config.stunServers);
+    this.stunServers = arrayify(config.stunServers).filter(Boolean);
     this.turnServers = config.turnServers;
     this.registrarServer = config.registrarServer;
 
+    this._wsAttempts = 0;
+    this._startPromise = null;
     this._userAgent = null;
+    this._registerer = null;
+    this._activeCall = null;
 
     this._ensureConnectivityWithSipServer();
 
-    let uri = new SIP.URI("sip", this.username, this.host, this.port).toString();
-
-    let sipUAConfig = {
-      uri: uri,
-      wsServers: this.wsServers,
-      authorizationUser: this.username,
-      password: this.password,
+    const userUri = this._buildUserUri();
+    const transportOptions = this._buildTransportOptions(config);
+    const sdhFactoryOptions = this._buildSessionDescriptionHandlerOptions();
+    const userAgentOptions = {
+      uri: userUri,
+      authorizationPassword: this.password,
+      authorizationUsername: this.username,
       displayName: this.displayName,
-      stunServers: this.stunServers,
-      turnServers: this.turnServers,
-      registrarServer: this.registrarServer
+      sessionDescriptionHandlerFactory: this._Web.defaultSessionDescriptionHandlerFactory(),
+      sessionDescriptionHandlerFactoryOptions: sdhFactoryOptions,
+      transportOptions: transportOptions,
+      reconnectionAttempts: this._resolveReconnectionAttempts(config),
+      reconnectionDelay: this._resolveReconnectionDelay(config)
     };
-    if (config.traceSip) {
-      sipUAConfig.traceSip = true;
-    }
+
     if (config.logLevel) {
       if (config.logLevel === "off") {
-        sipUAConfig.log = { builtinEnabled: false };
+        userAgentOptions.logBuiltinEnabled = false;
       } else {
-        sipUAConfig.log = { level: config.logLevel };
+        userAgentOptions.logLevel = config.logLevel;
       }
     }
-    this._userAgent = new SIP.UA(sipUAConfig);
 
-    /**
-    * wsConnecting event
-    *
-    * Fired when the device attempts to connect to the WebSocket server.
-    * If the connection drops, the device will try to reconnect and this event will fire again.
-    *
-    * @event TelnyxDevice#wsConnecting
-    * @type {object}
-    * @property {number} attempts - the number of connection attempts that have been made
-    */
-    this._userAgent.on("connecting", (args)  => {this.trigger("wsConnecting", {attempts: args.attempts});});
+    this._userAgent = new this._UserAgent(userAgentOptions);
+    this._setActiveTransportServer(this._activeTransportServer);
+    this._userAgent.delegate = this._createUserAgentDelegate();
 
-    /**
-    * wsConnected event
-    *
-    * Fired when the WebSocket connection has been established.
-    *
-    * @event TelnyxDevice#wsConnected
-    */
-    this._userAgent.on("connected", ()  => {this.trigger("wsConnected");});
-
-    /**
-    * wsDisconnected event
-    *
-    * Fried when the WebSocket connection attempt fails.
-    *
-    * @event TelnyxDevice#wsDisconnected
-    */
-    this._userAgent.on("disconnected", ()  => {this.trigger("wsDisconnected");});
-
-    /**
-    * registered event
-    *
-    * Fired when a the device has been successfully registered to recieve calls.
-    *
-    * @event TelnyxDevice#registered
-    */
-    this._userAgent.on("registered", ()  => {this.trigger("registered");});
-
-    /**
-    * unregistered event
-    *
-    * Fired as the result of a call to `unregister()` or if a periodic re-registration fails.
-    *
-    * @event TelnyxDevice#unregistered
-    * @type {object}
-    * @property {object} cause - null if `unregister()` was called, otherwise see [SIPjs causes]{@link http://sipjs.com/api/0.7.0/causes/}
-    * @property {object} response - The SIP message which caused the failure, if it exists.
-    */
-    this._userAgent.on("unregistered", (response, cause)  => {
-      this.trigger("unregistered", {cause: cause, response: response});
-    });
-
-    /**
-    * registrationFailed event
-    *
-    * Fired when a registration attepmt fails.
-    *
-    * @event TelnyxDevice#registrationFailed
-    * @type {object}
-    * @property {object} cause - see [SIPjs causes]{@link http://sipjs.com/api/0.7.0/causes/}
-    * @property {object} response - The SIP message which caused the failure, if it exists.
-    */
-    this._userAgent.on("registrationFailed", (cause, response)  => {
-      this.trigger("registrationFailed", {cause: cause, response: response});
-    });
-
-    /**
-    * incomingInvite event
-    *
-    * Fired when the device recieves an INVITE request
-    * @event TelnyxDevice#invite
-    * @type {Session}
-    */
-    this._userAgent.on("invite", (session) => {
-      this._activeCall = new TelnyxCall(this._userAgent);
-      this._activeCall.incomingCall(session);
-      this.trigger("incomingInvite", {activeCall: this._activeCall});
-    });
-
-    /**
-    * message event
-    *
-    * @event TelnyxDevice#message
-    * @type {object}
-    * @property {object} message - Contains the SIP message sent and server context necessary to receive and send replies.
-    */
-    this._userAgent.on("message", (message)  => {this.trigger("message", {message: message});});
-
+    const registererOptions = this._buildRegistererOptions();
+    this._registerer = new this._Registerer(this._userAgent, registererOptions);
+    this._registerer.stateChange.addListener((state) => this._handleRegistererState(state));
   }
 
   /**
   * Start the connection to the WebSocket server, and restore the previous state if stopped.
-  * You need to start the WebSocket connection before you can send or recieve calls. If you
+  * You need to start the WebSocket connection before you can send or receive calls. If you
   * try to `initiateCall` without first starting the connection, it will be started for you,
   * but it will not be stopped when the call is terminated.
+  *
+  * @fires TelnyxDevice#wsConnecting
+  * @return {Promise<void>} Resolves when the underlying UserAgent transport is running.
   */
   startWS() {
-    this._userAgent.start();
+    return this._startTransport(false);
   }
 
   /**
   * Stop the connection to the WebSocket server, saving the state so it can be restored later
   * (by `start`).
+  *
+  * @return {Promise<void>} Resolves when the transport has been torn down.
   */
   stopWS() {
-    this._userAgent.stop();
+    return this._userAgent.stop();
   }
 
   /**
@@ -199,9 +134,16 @@ class TelnyxDevice extends EventEmitter {
   * @param {Object} options
   * @param {String[]} options.extraHeaders SIP headers that will be added to each REGISTER request. Each header is string in the format `"X-Header-Name: Header-value"`.
   * @emits TelnyxDevice#registered
+  * @return {Promise<void>} Resolves after the REGISTER transaction is sent.
   */
-  register(options) {
-   this._userAgent.register(options);
+  register(options = {}) {
+   const normalizedOptions = this._prepareRegisterOptions(options);
+   return this._ensureTransportIsStarted().then(() => {
+     return this._registerer.register(normalizedOptions);
+   }).catch((error) => {
+     this._emitRegistrationFailure(error, null);
+     throw error;
+   });
   }
 
   /**
@@ -211,9 +153,11 @@ class TelnyxDevice extends EventEmitter {
   * @param {Boolean} options.all [Optional] - if set & `true` it will unregister *all* bindings for the SIP user.
   * @param {String[]} options.extraHeaders SIP headers that will be added to each REGISTER request. Each header is string in the format `"X-Header-Name: Header-value"`.
   * @emits TelnyxDevice#unregistered
+  * @return {Promise<void>} Resolves when the REGISTER request has been sent.
   */
-  unregister(options) {
-   this._userAgent.register(options);
+  unregister(options = {}) {
+   const normalizedOptions = this._normalizeRegisterOptions(options);
+   return this._ensureTransportIsStarted().then(() => this._registerer.unregister(normalizedOptions));
   }
 
   /**
@@ -222,7 +166,7 @@ class TelnyxDevice extends EventEmitter {
   * @return {Boolean} isRegistered `true` if the device is registered with the SIP Server, `false` otherwise
   */
   isRegistered() {
-   return this._userAgent.isRegistered();
+   return !!this._registerer && this._registerer.state === RegistererState.Registered;
   }
 
   /**
@@ -230,20 +174,361 @@ class TelnyxDevice extends EventEmitter {
   *
   * @param {String} phoneNumber The desination phone number to connect to. Just digits, no punctuation. Example `"12065551111"`.
   * @return {TelnyxCall} activeCall Keep an eye on the call's state by listening to events emitted by activeCall
+  * @throws {TypeError} If the destination cannot be converted into a SIP URI.
   */
   initiateCall(phoneNumber) {
-    let uri = new SIP.URI("sip", phoneNumber, this.host, this.port).toString();
-    this._activeCall = new TelnyxCall(this._userAgent);
-    this._activeCall.makeCall(uri);
+    const targetUri = this._buildTargetUri(phoneNumber);
+    if (!targetUri) {
+      throw new TypeError("TelnyxDevice: Invalid destination");
+    }
+    const inviter = new this._Inviter(this._userAgent, targetUri, {
+      sessionDescriptionHandlerOptions: this._buildSessionDescriptionHandlerMediaConstraints()
+    });
+    this._activeCall = new TelnyxCall(inviter);
+    const activeCall = this._activeCall;
+    this._ensureTransportIsStarted().then(() => {
+      return activeCall.makeCall();
+    }).catch((error) => {
+      if (activeCall) {
+        activeCall.trigger("failed", {cause: error});
+      }
+    });
     return this._activeCall;
   }
 
   /**
   * Get a reference to the call currently in progress
   *
-  * @return {TelnyxCall} activeCall Keep an eye on the call's state by listening to events emitted by activeCall
+  * @return {?TelnyxCall} activeCall Keep an eye on the call's state by listening to events emitted by activeCall
   */
   activeCall() { return this._activeCall; }
+
+  /**
+  * wsConnecting event
+  *
+  * Fired when the device attempts to connect to the WebSocket server.
+  * If the connection drops, TelnyxDevice will try to reconnect and this event will fire again.
+  *
+  * @event TelnyxDevice#wsConnecting
+  * @type {Object}
+  * @property {number} attempts Total number of connection attempts made so far.
+  */
+
+  /**
+  * wsConnected event
+  *
+  * Fired when the WebSocket connection has been established.
+  *
+  * @event TelnyxDevice#wsConnected
+  */
+
+  /**
+  * wsDisconnected event
+  *
+  * Fired when the WebSocket connection drops unexpectedly.
+  *
+  * @event TelnyxDevice#wsDisconnected
+  * @type {Object}
+  * @property {?Error} error Transport error, if the disconnect was caused by one.
+  */
+
+  /**
+  * registered event
+  *
+  * Fired when the device has been successfully registered to receive calls.
+  *
+  * @event TelnyxDevice#registered
+  */
+
+  /**
+  * unregistered event
+  *
+  * Fired as the result of a call to `unregister()` or when a periodic re-registration fails.
+  *
+  * @event TelnyxDevice#unregistered
+  * @type {Object}
+  * @property {?Object} cause `null` if `unregister()` was called, otherwise the failure cause object.
+  * @property {?Object} response The SIP response that caused the unregistration, if available.
+  */
+
+  /**
+  * registrationFailed event
+  *
+  * Fired when a registration attempt fails permanently (for example the Registerer enters the `Terminated` state).
+  *
+  * @event TelnyxDevice#registrationFailed
+  * @type {Object}
+  * @property {Object|Error} cause Details about the failure cause.
+  * @property {?Object} response Underlying SIP response, when available.
+  */
+
+  /**
+  * incomingInvite event
+  *
+  * Fired when an INVITE is received. A TelnyxCall instance is supplied so the caller can accept or reject the call.
+  *
+  * @event TelnyxDevice#incomingInvite
+  * @type {Object}
+  * @property {TelnyxCall} activeCall The TelnyxCall wrapping the incoming SIP session.
+  */
+
+  /**
+  * message event
+  *
+  * Fired when the device receives an out-of-dialog SIP MESSAGE.
+  *
+  * @event TelnyxDevice#message
+  * @type {Object}
+  * @property {Object} message SIP.js message wrapper including a request/response handle.
+  */
+  _createUserAgentDelegate() {
+    return {
+      onConnect: () => { this.trigger("wsConnected"); },
+      onDisconnect: (error) => {
+        this.trigger("wsDisconnected", {error: error || null});
+        this._handleTransportDisconnect(error);
+      },
+      onInvite: (invitation) => { this._handleIncomingInvitation(invitation); },
+      onMessage: (message) => { this.trigger("message", {message: message}); }
+    };
+  }
+
+  _handleRegistererState(state) {
+    if (state === RegistererState.Registered) {
+      this.trigger("registered");
+    } else if (state === RegistererState.Unregistered) {
+      this.trigger("unregistered", {cause: null, response: null});
+    } else if (state === RegistererState.Terminated) {
+      this.trigger("unregistered", {cause: "terminated", response: null});
+    }
+  }
+
+  _handleIncomingInvitation(invitation) {
+    this._activeCall = new TelnyxCall(invitation);
+    this._activeCall.incomingCall();
+    this.trigger("incomingInvite", {activeCall: this._activeCall});
+  }
+
+  _buildUserUri() {
+    const uri = this._UserAgent.makeURI(`sip:${this.username}@${this.host}:${this.port}`);
+    if (!uri) {
+      throw new TypeError("TelnyxDevice: Unable to create SIP URI");
+    }
+    return uri;
+  }
+
+  _buildTargetUri(destination) {
+    if (!destination) {
+      return null;
+    }
+    return this._UserAgent.makeURI(`sip:${destination}@${this.host}:${this.port}`);
+  }
+
+  _buildTransportOptions(config) {
+    const options = { server: this._activeTransportServer };
+    if (config.traceSip) {
+      options.traceSip = true;
+    }
+    return options;
+  }
+
+  _buildSessionDescriptionHandlerOptions() {
+    const iceServers = [];
+    this.stunServers.forEach((server) => {
+      iceServers.push({urls: server});
+    });
+    if (this.turnServers) {
+      const turnEntries = arrayify(this.turnServers);
+      turnEntries.forEach((turn) => {
+        if (!turn) {
+          return;
+        }
+        if (typeof turn === "string") {
+          iceServers.push({urls: turn});
+          return;
+        }
+        if (!turn.urls) {
+          return;
+        }
+        iceServers.push({
+          urls: turn.urls,
+          username: turn.username,
+          credential: turn.password
+        });
+      });
+    }
+    return {peerConnectionConfiguration: {iceServers: iceServers}};
+  }
+
+  _buildSessionDescriptionHandlerMediaConstraints() {
+    return {constraints: {audio: true, video: false}};
+  }
+
+  _buildRegistererOptions() {
+    const options = {};
+    if (this.registrarServer) {
+      const registrarUri = this._UserAgent.makeURI(this.registrarServer);
+      if (registrarUri) {
+        options.registrar = registrarUri;
+      }
+    }
+    return options;
+  }
+
+  _normalizeRegisterOptions(options = {}) {
+    const normalized = Object.assign({}, options);
+    if (options.requestOptions) {
+      normalized.requestOptions = Object.assign({}, options.requestOptions);
+    }
+    if (options.requestDelegate) {
+      normalized.requestDelegate = Object.assign({}, options.requestDelegate);
+    }
+    if (options.extraHeaders) {
+      normalized.requestOptions = normalized.requestOptions || {};
+      normalized.requestOptions.extraHeaders = options.extraHeaders;
+      delete normalized.extraHeaders;
+    }
+    return normalized;
+  }
+
+  _prepareRegisterOptions(options = {}) {
+    const normalized = this._normalizeRegisterOptions(options);
+    return this._attachRegisterRequestDelegate(normalized);
+  }
+
+  _attachRegisterRequestDelegate(options = {}) {
+    const normalized = Object.assign({}, options);
+    const userDelegate = normalized.requestDelegate ? Object.assign({}, normalized.requestDelegate) : {};
+    const failureHandler = (response) => {
+      const sipResponse = response && response.message ? response.message : null;
+      this._emitRegistrationFailure(response || null, sipResponse);
+    };
+    normalized.requestDelegate = normalized.requestDelegate ? Object.assign({}, normalized.requestDelegate) : {};
+    normalized.requestDelegate.onReject = this._chainCallbacks(failureHandler, userDelegate.onReject);
+    normalized.requestDelegate.onRedirect = this._chainCallbacks(failureHandler, userDelegate.onRedirect);
+    return normalized;
+  }
+
+  _chainCallbacks(first, second) {
+    if (!first && !second) {
+      return undefined;
+    }
+    return (...args) => {
+      if (typeof first === "function") {
+        first(...args);
+      }
+      if (typeof second === "function") {
+        return second(...args);
+      }
+      return undefined;
+    };
+  }
+
+  _emitRegistrationFailure(cause, response) {
+    this.trigger("registrationFailed", {cause: cause, response: response});
+  }
+
+  _ensureTransportIsStarted() {
+    return this._startTransport(true);
+  }
+
+  _startTransport(autoTriggered) {
+    if (!this._userAgent) {
+      return Promise.resolve();
+    }
+    if (this._userAgent.isConnected()) {
+      return Promise.resolve();
+    }
+    if (!this._startPromise) {
+      this._wsAttempts += 1;
+      this.trigger("wsConnecting", {attempts: this._wsAttempts});
+      this._startPromise = this._userAgent.start().catch((error) => {
+        this._handleTransportFailure(error);
+        throw error;
+      }).finally(() => {
+        this._startPromise = null;
+      });
+    }
+    return this._startPromise;
+  }
+
+  _handleTransportFailure(error) {
+    if (!error) {
+      return;
+    }
+    this._cycleTransportServer();
+  }
+
+  _handleTransportDisconnect(error) {
+    if (!error) {
+      return;
+    }
+    this._cycleTransportServer();
+  }
+
+  _cycleTransportServer() {
+    if (!this._transportServers || this._transportServers.length <= 1) {
+      return;
+    }
+    this._currentTransportIndex = (this._currentTransportIndex + 1) % this._transportServers.length;
+    const nextServer = this._transportServers[this._currentTransportIndex];
+    this._setActiveTransportServer(nextServer);
+  }
+
+  _setActiveTransportServer(server) {
+    if (!server) {
+      return;
+    }
+    this._activeTransportServer = server;
+    if (this._userAgent && this._userAgent.options) {
+      this._userAgent.options.transportOptions = this._userAgent.options.transportOptions || {};
+      this._userAgent.options.transportOptions.server = server;
+    }
+    if (this._userAgent && this._userAgent.transport && this._userAgent.transport.configuration) {
+      this._userAgent.transport.configuration.server = server;
+    }
+  }
+
+  _buildTransportServerList() {
+    const normalized = [];
+    for (let i = 0; i < this.wsServers.length; i += 1) {
+      const server = this._extractTransportServer(this.wsServers[i]);
+      if (server) {
+        normalized.push(server);
+      }
+    }
+    if (!normalized.length) {
+      normalized.push(`wss://${this.host}:${this.port}`);
+    }
+    return normalized;
+  }
+
+  _extractTransportServer(entry) {
+    if (typeof entry === "string" && entry.length) {
+      return entry;
+    }
+    if (entry && typeof entry === "object") {
+      return entry.wsUri || entry.ws_uri || entry.server || entry.uri || entry.url || null;
+    }
+    return null;
+  }
+
+  _resolveReconnectionAttempts(config) {
+    if (typeof config.reconnectionAttempts === "number") {
+      return config.reconnectionAttempts;
+    }
+    if (this._transportServers && this._transportServers.length > 1) {
+      return this._transportServers.length;
+    }
+    return 3;
+  }
+
+  _resolveReconnectionDelay(config) {
+    if (typeof config.reconnectionDelay === "number") {
+      return config.reconnectionDelay;
+    }
+    return 4;
+  }
 
 
   // Ensure that we can connect to the SIP server.

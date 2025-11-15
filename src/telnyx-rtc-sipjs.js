@@ -1,2 +1,2 @@
-import { TelnyxDevice } from './lib/telnyx-device';
-export { TelnyxDevice };
+export { TelnyxDevice } from './lib/telnyx-device';
+export { TelnyxCall } from './lib/telnyx-call';

@@ -27,9 +27,5 @@ module.exports = {
       },
     ],
   },
-  plugins: [
-    new webpack.ProvidePlugin({
-      SIP: 'sip.js',
-    }),
-  ],
+  plugins: [],
 };
