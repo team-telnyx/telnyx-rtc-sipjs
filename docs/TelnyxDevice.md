@@ -1,34 +1,9 @@
 <a name="TelnyxDevice"></a>
 
 ## TelnyxDevice
-Represents the software phone running in a web browser or other context.
-
-**Kind**: global class  
-
-* [TelnyxDevice](#TelnyxDevice)
-    * [new TelnyxDevice(config)](#new_TelnyxDevice_new)
-    * [.startWS()](#TelnyxDevice+startWS)
-    * [.stopWS()](#TelnyxDevice+stopWS)
-    * [.isWSConnected()](#TelnyxDevice+isWSConnected) ⇒ <code>Boolean</code>
-    * [.register(options)](#TelnyxDevice+register)
-    * [.unregister(options)](#TelnyxDevice+unregister)
-    * [.isRegistered()](#TelnyxDevice+isRegistered) ⇒ <code>Boolean</code>
-    * [.initiateCall(phoneNumber)](#TelnyxDevice+initiateCall) ⇒ <code>TelnyxCall</code>
-    * [.activeCall()](#TelnyxDevice+activeCall) ⇒ <code>TelnyxCall</code>
-    * ["wsConnecting"](#TelnyxDevice+event_wsConnecting)
-    * ["wsConnected"](#TelnyxDevice+event_wsConnected)
-    * ["wsDisconnected"](#TelnyxDevice+event_wsDisconnected)
-    * ["registered"](#TelnyxDevice+event_registered)
-    * ["unregistered"](#TelnyxDevice+event_unregistered)
-    * ["registrationFailed"](#TelnyxDevice+event_registrationFailed)
-    * ["invite"](#TelnyxDevice+event_invite)
-    * ["message"](#TelnyxDevice+event_message)
-
-<a name="new_TelnyxDevice_new"></a>
-
-### new TelnyxDevice(config)
 Create a new TelnyxDevice.
 
+**Kind**: global class  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -48,36 +23,59 @@ Create a new TelnyxDevice.
 | config.traceSip | <code>Boolean</code> | If true, SIP traces will be logged to the dev console. |
 | config.logLevel | <code>String</code> | One of "debug", "log", "warn", "error", "off".  default is "log" |
 
+
+* [TelnyxDevice](#TelnyxDevice)
+    * [.startWS()](#TelnyxDevice+startWS) ⇒ <code>Promise.&lt;void&gt;</code>
+    * [.stopWS()](#TelnyxDevice+stopWS) ⇒ <code>Promise.&lt;void&gt;</code>
+    * [.isWSConnected()](#TelnyxDevice+isWSConnected) ⇒ <code>Boolean</code>
+    * [.register(options)](#TelnyxDevice+register) ⇒ <code>Promise.&lt;void&gt;</code>
+    * [.unregister(options)](#TelnyxDevice+unregister) ⇒ <code>Promise.&lt;void&gt;</code>
+    * [.isRegistered()](#TelnyxDevice+isRegistered) ⇒ <code>Boolean</code>
+    * [.initiateCall(phoneNumber)](#TelnyxDevice+initiateCall) ⇒ <code>TelnyxCall</code>
+    * [.activeCall()](#TelnyxDevice+activeCall) ⇒ <code>TelnyxCall</code>
+    * ["wsConnecting"](#TelnyxDevice+event_wsConnecting)
+    * ["wsConnected"](#TelnyxDevice+event_wsConnected)
+    * ["wsDisconnected"](#TelnyxDevice+event_wsDisconnected)
+    * ["registered"](#TelnyxDevice+event_registered)
+    * ["unregistered"](#TelnyxDevice+event_unregistered)
+    * ["registrationFailed"](#TelnyxDevice+event_registrationFailed)
+    * ["incomingInvite"](#TelnyxDevice+event_incomingInvite)
+    * ["message"](#TelnyxDevice+event_message)
+
 <a name="TelnyxDevice+startWS"></a>
 
-### telnyxDevice.startWS()
+### telnyxDevice.startWS() ⇒ <code>Promise.&lt;void&gt;</code>
 Start the connection to the WebSocket server, and restore the previous state if stopped.
-You need to start the WebSocket connection before you can send or recieve calls. If you
+You need to start the WebSocket connection before you can send or receive calls. If you
 try to `initiateCall` without first starting the connection, it will be started for you,
 but it will not be stopped when the call is terminated.
 
-**Kind**: instance method of <code>[TelnyxDevice](#TelnyxDevice)</code>  
+**Kind**: instance method of [<code>TelnyxDevice</code>](#TelnyxDevice)  
+**Returns**: <code>Promise.&lt;void&gt;</code> - Resolves when the underlying UserAgent transport is running.  
+**Emits**: [<code>wsConnecting</code>](#TelnyxDevice+event_wsConnecting)  
 <a name="TelnyxDevice+stopWS"></a>
 
-### telnyxDevice.stopWS()
+### telnyxDevice.stopWS() ⇒ <code>Promise.&lt;void&gt;</code>
 Stop the connection to the WebSocket server, saving the state so it can be restored later
 (by `start`).
 
-**Kind**: instance method of <code>[TelnyxDevice](#TelnyxDevice)</code>  
+**Kind**: instance method of [<code>TelnyxDevice</code>](#TelnyxDevice)  
+**Returns**: <code>Promise.&lt;void&gt;</code> - Resolves when the transport has been torn down.  
 <a name="TelnyxDevice+isWSConnected"></a>
 
 ### telnyxDevice.isWSConnected() ⇒ <code>Boolean</code>
 Status of the WebSocket connection
 
-**Kind**: instance method of <code>[TelnyxDevice](#TelnyxDevice)</code>  
+**Kind**: instance method of [<code>TelnyxDevice</code>](#TelnyxDevice)  
 **Returns**: <code>Boolean</code> - isConnected `true` if the device is connected to the WebSocket server, `false` otherwise  
 <a name="TelnyxDevice+register"></a>
 
-### telnyxDevice.register(options)
+### telnyxDevice.register(options) ⇒ <code>Promise.&lt;void&gt;</code>
 Register the device with the SIP server so that it can receive incoming calls.
 
-**Kind**: instance method of <code>[TelnyxDevice](#TelnyxDevice)</code>  
-**Emits**: <code>[registered](#TelnyxDevice+event_registered)</code>  
+**Kind**: instance method of [<code>TelnyxDevice</code>](#TelnyxDevice)  
+**Returns**: <code>Promise.&lt;void&gt;</code> - Resolves after the REGISTER transaction is sent.  
+**Emits**: [<code>registered</code>](#TelnyxDevice+event_registered)  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -86,11 +84,12 @@ Register the device with the SIP server so that it can receive incoming calls.
 
 <a name="TelnyxDevice+unregister"></a>
 
-### telnyxDevice.unregister(options)
+### telnyxDevice.unregister(options) ⇒ <code>Promise.&lt;void&gt;</code>
 Unregister the device from the SIP server; it will no longer recieve incoming calls.
 
-**Kind**: instance method of <code>[TelnyxDevice](#TelnyxDevice)</code>  
-**Emits**: <code>[unregistered](#TelnyxDevice+event_unregistered)</code>  
+**Kind**: instance method of [<code>TelnyxDevice</code>](#TelnyxDevice)  
+**Returns**: <code>Promise.&lt;void&gt;</code> - Resolves when the REGISTER request has been sent.  
+**Emits**: [<code>unregistered</code>](#TelnyxDevice+event_unregistered)  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -103,15 +102,19 @@ Unregister the device from the SIP server; it will no longer recieve incoming ca
 ### telnyxDevice.isRegistered() ⇒ <code>Boolean</code>
 Status of SIP registration
 
-**Kind**: instance method of <code>[TelnyxDevice](#TelnyxDevice)</code>  
+**Kind**: instance method of [<code>TelnyxDevice</code>](#TelnyxDevice)  
 **Returns**: <code>Boolean</code> - isRegistered `true` if the device is registered with the SIP Server, `false` otherwise  
 <a name="TelnyxDevice+initiateCall"></a>
 
 ### telnyxDevice.initiateCall(phoneNumber) ⇒ <code>TelnyxCall</code>
 Make a phone call
 
-**Kind**: instance method of <code>[TelnyxDevice](#TelnyxDevice)</code>  
+**Kind**: instance method of [<code>TelnyxDevice</code>](#TelnyxDevice)  
 **Returns**: <code>TelnyxCall</code> - activeCall Keep an eye on the call's state by listening to events emitted by activeCall  
+**Throws**:
+
+- <code>TypeError</code> If the destination cannot be converted into a SIP URI.
+
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -122,7 +125,7 @@ Make a phone call
 ### telnyxDevice.activeCall() ⇒ <code>TelnyxCall</code>
 Get a reference to the call currently in progress
 
-**Kind**: instance method of <code>[TelnyxDevice](#TelnyxDevice)</code>  
+**Kind**: instance method of [<code>TelnyxDevice</code>](#TelnyxDevice)  
 **Returns**: <code>TelnyxCall</code> - activeCall Keep an eye on the call's state by listening to events emitted by activeCall  
 <a name="TelnyxDevice+event_wsConnecting"></a>
 
@@ -130,14 +133,14 @@ Get a reference to the call currently in progress
 wsConnecting event
 
 Fired when the device attempts to connect to the WebSocket server.
-If the connection drops, the device will try to reconnect and this event will fire again.
+If the connection drops, TelnyxDevice will try to reconnect and this event will fire again.
 
-**Kind**: event emitted by <code>[TelnyxDevice](#TelnyxDevice)</code>  
+**Kind**: event emitted by [<code>TelnyxDevice</code>](#TelnyxDevice)  
 **Properties**
 
 | Name | Type | Description |
 | --- | --- | --- |
-| attempts | <code>number</code> | the number of connection attempts that have been made |
+| attempts | <code>number</code> | Total number of connection attempts made so far. |
 
 <a name="TelnyxDevice+event_wsConnected"></a>
 
@@ -146,70 +149,84 @@ wsConnected event
 
 Fired when the WebSocket connection has been established.
 
-**Kind**: event emitted by <code>[TelnyxDevice](#TelnyxDevice)</code>  
+**Kind**: event emitted by [<code>TelnyxDevice</code>](#TelnyxDevice)  
 <a name="TelnyxDevice+event_wsDisconnected"></a>
 
 ### "wsDisconnected"
 wsDisconnected event
 
-Fried when the WebSocket connection attempt fails.
+Fired when the WebSocket connection drops unexpectedly.
 
-**Kind**: event emitted by <code>[TelnyxDevice](#TelnyxDevice)</code>  
+**Kind**: event emitted by [<code>TelnyxDevice</code>](#TelnyxDevice)  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| error | <code>Error</code> | Transport error, if the disconnect was caused by one. |
+
 <a name="TelnyxDevice+event_registered"></a>
 
 ### "registered"
 registered event
 
-Fired when a the device has been successfully registered to recieve calls.
+Fired when the device has been successfully registered to receive calls.
 
-**Kind**: event emitted by <code>[TelnyxDevice](#TelnyxDevice)</code>  
+**Kind**: event emitted by [<code>TelnyxDevice</code>](#TelnyxDevice)  
 <a name="TelnyxDevice+event_unregistered"></a>
 
 ### "unregistered"
 unregistered event
 
-Fired as the result of a call to `unregister()` or if a periodic re-registration fails.
+Fired as the result of a call to `unregister()` or when a periodic re-registration fails.
 
-**Kind**: event emitted by <code>[TelnyxDevice](#TelnyxDevice)</code>  
+**Kind**: event emitted by [<code>TelnyxDevice</code>](#TelnyxDevice)  
 **Properties**
 
 | Name | Type | Description |
 | --- | --- | --- |
-| cause | <code>object</code> | null if `unregister()` was called, otherwise see [SIPjs causes](http://sipjs.com/api/0.7.0/causes/) |
-| response | <code>object</code> | The SIP message which caused the failure, if it exists. |
+| cause | <code>Object</code> | `null` if `unregister()` was called, otherwise the failure cause object. |
+| response | <code>Object</code> | The SIP response that caused the unregistration, if available. |
 
 <a name="TelnyxDevice+event_registrationFailed"></a>
 
 ### "registrationFailed"
 registrationFailed event
 
-Fired when a registration attepmt fails.
+Fired when a registration attempt fails permanently (for example the Registerer enters the `Terminated` state).
 
-**Kind**: event emitted by <code>[TelnyxDevice](#TelnyxDevice)</code>  
+**Kind**: event emitted by [<code>TelnyxDevice</code>](#TelnyxDevice)  
 **Properties**
 
 | Name | Type | Description |
 | --- | --- | --- |
-| cause | <code>object</code> | see [SIPjs causes](http://sipjs.com/api/0.7.0/causes/) |
-| response | <code>object</code> | The SIP message which caused the failure, if it exists. |
+| cause | <code>Object</code> \| <code>Error</code> | Details about the failure cause. |
+| response | <code>Object</code> | Underlying SIP response, when available. |
 
-<a name="TelnyxDevice+event_invite"></a>
+<a name="TelnyxDevice+event_incomingInvite"></a>
 
-### "invite"
+### "incomingInvite"
 incomingInvite event
 
-Fired when the device recieves an INVITE request
+Fired when an INVITE is received. A TelnyxCall instance is supplied so the caller can accept or reject the call.
 
-**Kind**: event emitted by <code>[TelnyxDevice](#TelnyxDevice)</code>  
+**Kind**: event emitted by [<code>TelnyxDevice</code>](#TelnyxDevice)  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| activeCall | <code>TelnyxCall</code> | The TelnyxCall wrapping the incoming SIP session. |
+
 <a name="TelnyxDevice+event_message"></a>
 
 ### "message"
 message event
 
-**Kind**: event emitted by <code>[TelnyxDevice](#TelnyxDevice)</code>  
+Fired when the device receives an out-of-dialog SIP MESSAGE.
+
+**Kind**: event emitted by [<code>TelnyxDevice</code>](#TelnyxDevice)  
 **Properties**
 
 | Name | Type | Description |
 | --- | --- | --- |
-| message | <code>object</code> | Contains the SIP message sent and server context necessary to receive and send replies. |
+| message | <code>Object</code> | SIP.js message wrapper including a request/response handle. |
 

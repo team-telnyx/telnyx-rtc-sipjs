@@ -47,6 +47,8 @@ let config = {
     password: 'turnpassword',
   },
   registrarServer: 'sip:sip.telnyx.com:7443',
+  reconnectionAttempts: 3,
+  reconnectionDelay: 4,
 };
 
 let device = new TelnyxDevice(config);
