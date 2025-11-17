@@ -166,9 +166,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@telnyx/rtc-sipjs@workspace:.":
+"@telnyx/rtc-sipjs-simple-user@workspace:packages/telnyx-rtc-simple-user":
   version: 0.0.0-use.local
-  resolution: "@telnyx/rtc-sipjs@workspace:."
+  resolution: "@telnyx/rtc-sipjs-simple-user@workspace:packages/telnyx-rtc-simple-user"
   dependencies:
     "@types/jasmine": "npm:^5.1.4"
     babel-runtime: "npm:^6.26.0"
@@ -180,6 +180,21 @@ __metadata:
     karma-jasmine: "npm:^5.1.0"
     karma-sourcemap-loader: "npm:^0.4.0"
     karma-webpack: "npm:^5.0.0"
+    rimraf: "npm:^5.0.5"
+    sip.js: "npm:0.21.2"
+    ts-loader: "npm:^9.5.1"
+    typescript: "npm:^5.4.5"
+    webpack: "npm:^5.91.0"
+    webpack-cli: "npm:^5.1.4"
+  languageName: unknown
+  linkType: soft
+
+"@telnyx/rtc-sipjs-user-agent@workspace:packages/telnyx-rtc-user-agent":
+  version: 0.0.0-use.local
+  resolution: "@telnyx/rtc-sipjs-user-agent@workspace:packages/telnyx-rtc-user-agent"
+  dependencies:
+    babel-runtime: "npm:^6.26.0"
+    es6-event-emitter: "npm:^1.5.2"
     rimraf: "npm:^5.0.5"
     sip.js: "npm:0.21.2"
     ts-loader: "npm:^9.5.1"
@@ -3449,6 +3464,12 @@ __metadata:
   checksum: 10c0/a7d8b801139b52f93a7e34830db0de54c5aa45487c7cb551f6f3d44a112c67f1cb8ffdae856b05fd4f17b1749911f1c26f1e3a23bbe0279e17fd96077f13f467
   languageName: node
   linkType: hard
+
+"telnyx-rtc-sipjs@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "telnyx-rtc-sipjs@workspace:."
+  languageName: unknown
+  linkType: soft
 
 "temp-path@npm:^1.0.0":
   version: 1.0.0

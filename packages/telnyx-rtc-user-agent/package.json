@@ -1,0 +1,56 @@
+{
+  "name": "@telnyx/rtc-sipjs-user-agent",
+  "version": "2.0.0-alpha.0",
+  "description": "Telnyx JavaScript WebRTC helpers backed by the SIP.js UserAgent API",
+  "keywords": [
+    "telnyx",
+    "webrtc",
+    "sip",
+    "sip.js",
+    "soft phone",
+    "voip"
+  ],
+  "main": "dist/user-agent.js",
+  "types": "dist/types/index.d.ts",
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "clean": "rimraf dist/*",
+    "prebuild": "yarn clean",
+    "build": "yarn build:bundles && yarn types",
+    "build:bundles": "yarn build:dev && yarn build:prod",
+    "build:dev": "webpack --config ./webpack.config.dev.js",
+    "build:prod": "webpack --config ./webpack.config.prod.js",
+    "types": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "watch": "webpack --watch --config ./webpack.config.dev.js",
+    "test": "echo 'No tests defined for @telnyx/rtc-sipjs-user-agent'",
+    "prepare": "yarn build",
+    "prepublishOnly": "yarn test"
+  },
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/team-telnyx/telnyx-rtc-sipjs"
+  },
+  "publishConfig": {
+    "@telnyx:registry": "https://registry.npmjs.org"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.5",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.4.5",
+    "webpack": "^5.91.0",
+    "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "babel-runtime": "^6.26.0",
+    "es6-event-emitter": "^1.5.2",
+    "sip.js": "0.21.2"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "packageManager": "yarn@4.1.1"
+}

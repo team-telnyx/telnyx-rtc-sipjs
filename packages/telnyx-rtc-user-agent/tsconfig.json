@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2019",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "noEmit": true,
+    "allowSyntheticDefaultImports": true,
+    "lib": ["DOM", "DOM.Iterable", "ES2021"],
+    "baseUrl": ".",
+    "typeRoots": ["./types", "./node_modules/@types"],
+    "paths": {
+      "es6-event-emitter": ["types/es6-event-emitter"]
+    }
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.spec.ts"]
+}

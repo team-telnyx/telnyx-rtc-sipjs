@@ -1,80 +1,25 @@
 {
-  "name": "@telnyx/rtc-sipjs",
-  "version": "2.0.0-alpha.0",
-  "description": "Telnyx JavaScript library for building WebRTC apps with SIP.js",
-  "keywords": [
-    "telnyx",
-    "webrtc",
-    "sip",
-    "sip.js",
-    "soft phone",
-    "voip"
-  ],
-  "main": "dist/telnyx-rtc-sipjs.js",
-  "types": "dist/types/telnyx-rtc-sipjs.d.ts",
-  "files": [
-    "dist/",
-    "types/"
-  ],
+  "name": "telnyx-rtc-sipjs",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Telnyx SIP.js helpers monorepo",
   "scripts": {
-    "docs": "jsdoc2md src/lib/telnyx-device.ts > docs/TelnyxDevice.md && jsdoc2md src/lib/telnyx-call.ts > docs/TelnyxCall.md",
-    "clean": "rimraf dist/*",
-    "prebuild": "yarn clean",
-    "build": "yarn build:bundles && yarn types",
-    "build:bundles": "yarn build:dev && yarn build:prod",
-    "build:dev": "webpack --config ./webpack.config.dev.js",
-    "build:prod": "webpack --config ./webpack.config.prod.js",
-    "watch": "webpack --watch --config ./webpack.config.dev.js",
-    "start": "yarn watch",
-    "test": "karma start",
-    "types": "tsc -p tsconfig.build.json",
-    "typecheck": "tsc --noEmit",
-    "release": "yarn dlx @telnyx/release",
-    "prepare": "yarn build",
-    "prepublishOnly": "yarn test && yarn release"
+    "build": "yarn workspaces foreach -pt run build",
+    "test": "yarn workspaces foreach -pt run test",
+    "typecheck": "yarn workspaces foreach -pt run typecheck",
+    "clean": "yarn workspaces foreach -pt run clean || true"
   },
-  "contributors": [
-    {
-      "name": "Jason Brackins",
-      "email": "jasonb@telnyx.com",
-      "url": "https://telnyx.com"
-    },
-    {
-      "name": "Sua Yoo",
-      "email": "sua@telnyx.com",
-      "url": "https://telnyx.com"
-    }
-  ],
-  "license": "ISC",
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/team-telnyx/telnyx-rtc-sipjs"
   },
-  "publishConfig": {
-    "@telnyx:registry": "https://registry.npmjs.org"
-  },
-  "devDependencies": {
-    "@types/jasmine": "^5.1.4",
-    "es6-event-emitter": "^1.5.2",
-    "jasmine-core": "^5.2.0",
-    "jsdoc-to-markdown": "^8.0.0",
-    "karma": "^6.4.3",
-    "karma-chrome-launcher": "^3.2.0",
-    "karma-jasmine": "^5.1.0",
-    "karma-sourcemap-loader": "^0.4.0",
-    "karma-webpack": "^5.0.0",
-    "rimraf": "^5.0.5",
-    "ts-loader": "^9.5.1",
-    "typescript": "^5.4.5",
-    "webpack": "^5.91.0",
-    "webpack-cli": "^5.1.4"
-  },
-  "dependencies": {
-    "babel-runtime": "^6.26.0",
-    "sip.js": "0.21.2"
-  },
   "engines": {
     "node": ">=20.0.0"
   },
-  "packageManager": "yarn@4.1.1+sha512.ec40d0639bb307441b945d9467139cbb88d14394baac760b52eca038b330d16542d66fef61574271534ace5a200518dabf3b53a85f1f9e4bfa37141b538a9590"
+  "packageManager": "yarn@4.1.1"
 }
