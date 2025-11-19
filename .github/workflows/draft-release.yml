@@ -62,11 +62,16 @@ jobs:
           node-version: "20"
           cache: "yarn"
           registry-url: https://registry.npmjs.org/
+      - name: Enable Corepack (Yarn)
+        run: corepack enable
       - name: Install shared dependencies
         run: yarn install --immutable
       - name: Install package dependencies
         working-directory: packages/${{ env.PACKAGE_DIR }}
         run: yarn install --immutable
+      - name: Build package
+        working-directory: packages/${{ env.PACKAGE_DIR }}
+        run: yarn build
       - name: Test
         working-directory: packages/${{ env.PACKAGE_DIR }}
         run: yarn test

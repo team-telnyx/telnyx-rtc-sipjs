@@ -7,6 +7,10 @@ on:
         description: "Package directory to publish"
         required: true
         default: "telnyx-rtc-simple-user"
+        type: choice
+        options:
+          - telnyx-rtc-simple-user
+          - telnyx-rtc-user-agent
       ref:
         description: "Git ref (branch or tag) to checkout"
         required: false
@@ -45,11 +49,16 @@ jobs:
           node-version: "20"
           cache: "yarn"
           registry-url: https://registry.npmjs.org/
+      - name: Enable Corepack (Yarn)
+        run: corepack enable
       - name: Install shared dependencies
         run: yarn install --immutable
       - name: Install package dependencies
         working-directory: packages/${{ env.PACKAGE_DIR }}
         run: yarn install --immutable
+      - name: Build package
+        working-directory: packages/${{ env.PACKAGE_DIR }}
+        run: yarn build
       - name: Publish package
         working-directory: packages/${{ env.PACKAGE_DIR }}
         run: npm publish --access public --tag ${{ env.NPM_DIST_TAG }}
