@@ -21,7 +21,7 @@ env:
 
 jobs:
   publish:
-    name: "${{ env.PACKAGE_NAME }} Publish prerelease"
+    name: Publish prerelease
 
     runs-on: ubuntu-latest
 

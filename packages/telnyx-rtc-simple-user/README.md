@@ -4,6 +4,8 @@
 
 This package lives inside the Telnyx SIP.js monorepo and delivers the modern SimpleUser-backed implementation of `TelnyxDevice`/`TelnyxCall`. It powers up your web application with the ability to make and receive phone calls directly in the browser.
 
+> **Heads up:** the legacy [`@telnyx/rtc-sipjs`](https://www.npmjs.com/package/@telnyx/rtc-sipjs) package is being split into this SimpleUser helper and [`@telnyx/rtc-sipjs-user-agent`](../telnyx-rtc-user-agent/README.md). If your project relies on `@telnyx/rtc-sipjs` and you expect SimpleUser semantics, install `@telnyx/rtc-sipjs-simple-user` directly going forward.
+
 Check out the library in action in [this web dialer demo](https://webrtc.telnyx.com/).
 
 _Looking for more WebRTC features, JSON-RPC support or need to quickly get spun up with a React app? Telnyx also has a robust [WebRTC SDK](https://github.com/team-telnyx/webrtc) available as a separate npm module._

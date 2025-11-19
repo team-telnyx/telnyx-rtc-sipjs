@@ -2,6 +2,8 @@
 
 `@telnyx/rtc-sipjs-user-agent` exposes the classic `TelnyxDevice`/`TelnyxCall` helpers built directly on top of the SIP.js [`UserAgent`](https://sipjs.com/api/classes/api_useragent.UserAgent.html) surface. Use this package if you need low-level access to SIP.js sessions but still want the familiar Telnyx event wrapper.
 
+> **Heads up:** the legacy [`@telnyx/rtc-sipjs`](https://www.npmjs.com/package/@telnyx/rtc-sipjs) bundle is being split into this package and [`@telnyx/rtc-sipjs-simple-user`](../telnyx-rtc-simple-user/README.md). Teams that depended on `@telnyx/rtc-sipjs` for `UserAgent` workflows should move to `@telnyx/rtc-sipjs-user-agent`.
+
 ## Installation
 
 ```bash
