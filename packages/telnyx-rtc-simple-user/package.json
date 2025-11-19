@@ -11,7 +11,7 @@
     "voip"
   ],
   "main": "dist/telnyx-rtc-sipjs.js",
-  "types": "types/telnyx-rtc-sipjs.d.ts",
+  "types": "dist/types/telnyx-rtc-sipjs.d.ts",
   "files": [
     "dist/",
     "types/",
