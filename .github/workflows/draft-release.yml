@@ -62,8 +62,8 @@ jobs:
           node-version: "20"
           cache: "yarn"
           registry-url: https://registry.npmjs.org/
-      - name: Enable Corepack (Yarn)
-        run: corepack enable
+      - name: Prepare Yarn 4
+        run: corepack prepare yarn@4 --activate
       - name: Install shared dependencies
         run: yarn install --immutable
       - name: Install package dependencies
