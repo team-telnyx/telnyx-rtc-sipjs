@@ -26,8 +26,7 @@
     "typecheck": "tsc --noEmit",
     "watch": "webpack --watch --config ./webpack.config.dev.js",
     "test": "echo 'No tests defined for @telnyx/rtc-sipjs-user-agent'",
-    "prepare": "yarn build",
-    "prepublishOnly": "yarn test"
+    "prepare": "yarn build"
   },
   "license": "ISC",
   "repository": {

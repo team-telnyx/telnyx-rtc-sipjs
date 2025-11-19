@@ -30,9 +30,7 @@
     "test": "karma start",
     "types": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
-    "release": "yarn dlx @telnyx/release",
-    "prepare": "yarn build",
-    "prepublishOnly": "yarn test && yarn release"
+    "prepare": "yarn build"
   },
   "contributors": [
     {
