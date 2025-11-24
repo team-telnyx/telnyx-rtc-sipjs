@@ -8,12 +8,14 @@ import {
   UserAgent,
   UserAgentDelegate,
   UserAgentOptions,
-} from 'sip.js';
-import type { RequestOptions } from 'sip.js/lib/core/messages/outgoing-request.js';
-import EventEmitter from 'es6-event-emitter';
-import { TelnyxCall } from './telnyx-call';
+} from "sip.js";
+import type { RequestOptions } from "sip.js/lib/core/messages/outgoing-request.js";
+import EventEmitter from "es6-event-emitter";
+import { TelnyxCall } from "./telnyx-call";
+import { DeviceEvent } from "./constants";
+import { OutgoingRegisterRequest } from "sip.js/lib/core";
 
-export type LogLevel = 'debug' | 'log' | 'warn' | 'error' | 'off';
+export type LogLevel = "debug" | "log" | "warn" | "error" | "off";
 
 export interface TurnServerConfig {
   urls: string | string[];
@@ -40,13 +42,16 @@ export interface RegisterOptions {
   extraHeaders?: string[];
 }
 
-export const DEFAULT_STUN_SERVERS = ['stun:stun.telnyx.com:3478', 'stun:stun.l.google.com:19302'];
+export const DEFAULT_STUN_SERVERS = [
+  "stun:stun.telnyx.com:3478",
+  "stun:stun.l.google.com:19302",
+];
 
 export const DEFAULT_TURN_SERVERS: ReadonlyArray<TurnServerConfig> = [
   {
-    urls: 'turn:turn.telnyx.com:3478?transport=tcp',
-    username: 'testuser',
-    password: 'testpassword',
+    urls: "turn:turn.telnyx.com:3478?transport=tcp",
+    username: "testuser",
+    password: "testpassword",
   },
 ];
 
@@ -70,11 +75,31 @@ class TelnyxDevice extends EventEmitter {
   private _connectionAttempts = 0;
   private _isRegistered = false;
 
+  /**
+   * Register an event listener
+   * @param event - The event name to listen to
+   * @param handler - The callback function to execute when the event is triggered
+   * @returns The device instance for method chaining
+   */
+  public on(event: DeviceEvent | string, handler: (...args: any[]) => void): this {
+    return super.on(event, handler);
+  }
+
+  /**
+   * Remove an event listener
+   * @param event - The event name to stop listening to
+   * @param handler - The callback function to remove
+   * @returns The device instance for method chaining
+   */
+  public off(event: DeviceEvent | string, handler?: (...args: any[]) => void): this {
+    return super.off(event, handler);
+  }
+
   constructor(config: TelnyxDeviceConfig) {
     super();
 
-    if (!config || typeof config !== 'object') {
-      throw new TypeError('TelnyxDevice: Missing config');
+    if (!config || typeof config !== "object") {
+      throw new TypeError("TelnyxDevice: Missing config");
     }
     if (!config.host) {
       throw new TypeError("TelnyxDevice: Missing 'host' parameter");
@@ -91,8 +116,10 @@ class TelnyxDevice extends EventEmitter {
     this.password = config.password;
     this.displayName = config.displayName || config.username;
     const configuredStunServers = arrayify(config.stunServers);
-    this.stunServers = configuredStunServers ? configuredStunServers : DEFAULT_STUN_SERVERS.slice();
-    if (typeof config.turnServers === 'undefined') {
+    this.stunServers = configuredStunServers
+      ? configuredStunServers
+      : DEFAULT_STUN_SERVERS.slice();
+    if (typeof config.turnServers === "undefined") {
       this.turnServers = DEFAULT_TURN_SERVERS.map((server) => ({
         urls: Array.isArray(server.urls) ? server.urls.slice() : server.urls,
         username: server.username,
@@ -111,7 +138,9 @@ class TelnyxDevice extends EventEmitter {
 
   startWS(): Promise<void> {
     this._connectionAttempts += 1;
-    this.trigger('wsConnecting', { attempts: this._connectionAttempts });
+    this.trigger(DeviceEvent.WsConnecting, {
+      attempts: this._connectionAttempts,
+    });
     return this.userAgent.start();
   }
 
@@ -123,22 +152,24 @@ class TelnyxDevice extends EventEmitter {
     return this.userAgent.isConnected();
   }
 
-  register(options?: RegisterOptions): void {
+  register(options?: RegisterOptions): Promise<OutgoingRegisterRequest> {
     const registerer = this.getOrCreateRegisterer();
-    registerer
+    return registerer
       .register(this.buildRegistererRequestOptions(options))
       .catch((error) => {
-        this.trigger('registrationFailed', { cause: error });
+        this.trigger(DeviceEvent.RegistrationFailed, { cause: error });
+        throw error;
       });
   }
 
-  unregister(options?: RegisterOptions): void {
-    if (!this.registerer) {
-      return;
-    }
-    this.registerer
+  unregister(options?: RegisterOptions): Promise<OutgoingRegisterRequest> {
+    const registerer = this.getOrCreateRegisterer();
+    return registerer
       .unregister(this.buildRegistererRequestOptions(options))
-      .catch((error) => this.trigger('registrationFailed', { cause: error }));
+      .catch((error) => {
+        this.trigger(DeviceEvent.RegistrationFailed, { cause: error });
+        throw error;
+      });
   }
 
   isRegistered(): boolean {
@@ -157,16 +188,18 @@ class TelnyxDevice extends EventEmitter {
   }
 
   private createCall(): TelnyxCall {
-    const call = new TelnyxCall(this.userAgent, { remoteAudioElement: this.remoteAudioElement });
+    const call = new TelnyxCall(this.userAgent, {
+      remoteAudioElement: this.remoteAudioElement,
+    });
     this._activeCall = call;
     const cleanup = (): void => {
       if (this._activeCall === call) {
         this._activeCall = undefined;
       }
     };
-    call.on('terminated', cleanup);
-    call.on('failed', cleanup);
-    call.on('rejected', cleanup);
+    call.on("terminated", cleanup);
+    call.on("failed", cleanup);
+    call.on("rejected", cleanup);
     return call;
   }
 
@@ -176,37 +209,40 @@ class TelnyxDevice extends EventEmitter {
     }
     const options = this.buildRegistererOptions();
     this.registerer = new Registerer(this.userAgent, options);
-    this.registerer.stateChange.addListener((state) => this.handleRegistererStateChange(state));
+    this.registerer.stateChange.addListener((state) =>
+      this.handleRegistererStateChange(state)
+    );
     return this.registerer;
   }
 
   private handleRegistererStateChange(state: RegistererState): void {
     if (state === RegistererState.Registered) {
       this._isRegistered = true;
-      this.trigger('registered');
+      this.trigger(DeviceEvent.Registered);
       return;
     }
     if (state === RegistererState.Unregistered) {
       this._isRegistered = false;
-      this.trigger('unregistered', { cause: null, response: null });
+      this.trigger(DeviceEvent.Unregistered, { cause: null, response: null });
       return;
     }
     if (state === RegistererState.Terminated) {
       this._isRegistered = false;
-      this.trigger('registrationFailed', { cause: 'terminated' });
+      this.trigger(DeviceEvent.RegistrationFailed, { cause: "terminated" });
     }
   }
 
   private buildRegistererOptions(): RegistererOptions {
     return {
-      registrar: this.registrarServer ? this.parseUriString(this.registrarServer) : undefined,
+      registrar: this.registrarServer
+        ? this.parseUriString(this.registrarServer)
+        : undefined,
     };
   }
 
-  private buildRegistererRequestOptions(options?: RegisterOptions):
-    | RegistererRegisterOptions
-    | RegistererUnregisterOptions
-    | undefined {
+  private buildRegistererRequestOptions(
+    options?: RegisterOptions
+  ): RegistererRegisterOptions | RegistererUnregisterOptions | undefined {
     if (!options?.extraHeaders || options.extraHeaders.length === 0) {
       return undefined;
     }
@@ -228,9 +264,14 @@ class TelnyxDevice extends EventEmitter {
         traceSip: this.config.traceSip,
       },
       sessionDescriptionHandlerFactoryOptions:
-        this.iceServers.length > 0 ? { peerConnectionConfiguration: { iceServers: this.iceServers } } : undefined,
-      logBuiltinEnabled: this.config.logLevel !== 'off',
-      logLevel: this.config.logLevel && this.config.logLevel !== 'off' ? this.config.logLevel : undefined,
+        this.iceServers.length > 0
+          ? { peerConnectionConfiguration: { iceServers: this.iceServers } }
+          : undefined,
+      logBuiltinEnabled: this.config.logLevel !== "off",
+      logLevel:
+        this.config.logLevel && this.config.logLevel !== "off"
+          ? this.config.logLevel
+          : undefined,
     };
   }
 
@@ -238,25 +279,31 @@ class TelnyxDevice extends EventEmitter {
     return {
       onConnect: () => {
         this._connectionAttempts = 0;
-        this.trigger('wsConnected');
+        this.trigger(DeviceEvent.WsConnected);
       },
       onDisconnect: () => {
-        this.trigger('wsDisconnected');
+        this.trigger(DeviceEvent.WsDisconnected);
       },
       onInvite: (invitation) => {
         const call = this.createCall();
         call.incomingCall(invitation);
-        this.trigger('incomingInvite', { activeCall: call });
+        this.trigger(DeviceEvent.IncomingInvite, { activeCall: call });
       },
       onMessage: (message) => {
-        this.trigger('message', { body: message });
+        this.trigger(DeviceEvent.Message, { body: message });
       },
     };
   }
 
   private buildUserUri(user: string): URI {
-    const port = typeof this.port === 'string' ? parseInt(this.port, 10) : this.port;
-    return new URI('sip', user, this.host, Number.isFinite(port) ? (port as number) : undefined);
+    const port =
+      typeof this.port === "string" ? parseInt(this.port, 10) : this.port;
+    return new URI(
+      "sip",
+      user,
+      this.host,
+      Number.isFinite(port) ? (port as number) : undefined
+    );
   }
 
   private parseUriString(value: string): URI | undefined {
@@ -265,7 +312,12 @@ class TelnyxDevice extends EventEmitter {
       return undefined;
     }
     const port = match[3] ? parseInt(match[3], 10) : undefined;
-    return new URI('sip', match[1], match[2], Number.isNaN(port) ? undefined : port);
+    return new URI(
+      "sip",
+      match[1],
+      match[2],
+      Number.isNaN(port) ? undefined : port
+    );
   }
 
   private buildTargetUri(phoneNumber: string): string {
@@ -276,7 +328,7 @@ class TelnyxDevice extends EventEmitter {
     if (this.wsServers && this.wsServers.length > 0) {
       return this.wsServers[0];
     }
-    return `wss://${this.host}${this.port ? `:${this.port}` : ''}`;
+    return `wss://${this.host}${this.port ? `:${this.port}` : ""}`;
   }
 
   private buildIceServers(): RTCIceServer[] {
@@ -311,7 +363,7 @@ class TelnyxDevice extends EventEmitter {
 }
 
 function arrayify<T>(item?: T | T[]): T[] | undefined {
-  if (typeof item === 'undefined' || item === null) {
+  if (typeof item === "undefined" || item === null) {
     return undefined;
   }
 

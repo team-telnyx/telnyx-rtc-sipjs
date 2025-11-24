@@ -10,4 +10,15 @@ module.exports = {
   transform: {
     ...tsjPreset.transform,
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(sip.js)/)',
+  ],
+  moduleNameMapper: {
+    '^sip\\.js(/.*)?$': '<rootDir>/test/mocks/sip.ts',
+  },
+  globals: {
+    'ts-jest': {
+      tsconfig: '<rootDir>/tsconfig.test.json',
+    },
+  },
 };

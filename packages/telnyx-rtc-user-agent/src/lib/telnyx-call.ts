@@ -1,6 +1,7 @@
 import { Info, Invitation, Inviter, Session, SessionDescriptionHandlerOptions, SessionState, UserAgent } from 'sip.js';
 import type { SessionDescriptionHandler as WebSessionDescriptionHandler } from 'sip.js/lib/platform/web/session-description-handler/session-description-handler.js';
 import EventEmitter from 'es6-event-emitter';
+import { CallEvent } from './constants';
 
 export type CallStatus = 'starting' | 'initiating' | 'connected' | 'ended';
 export type CallType = 'incoming' | 'outgoing' | '';
@@ -24,6 +25,26 @@ export class TelnyxCall extends EventEmitter {
   private readonly docBody: HTMLElement;
   private audioElement?: HTMLAudioElement;
 
+  /**
+   * Register an event listener
+   * @param event - The event name to listen to
+   * @param handler - The callback function to execute when the event is triggered
+   * @returns The call instance for method chaining
+   */
+  public on(event: CallEvent | string, handler: (...args: any[]) => void): this {
+    return super.on(event, handler);
+  }
+
+  /**
+   * Remove an event listener
+   * @param event - The event name to stop listening to
+   * @param handler - The callback function to remove
+   * @returns The call instance for method chaining
+   */
+  public off(event: CallEvent | string, handler?: (...args: any[]) => void): this {
+    return super.off(event, handler);
+  }
+
   constructor(userAgent: UserAgent, options: TelnyxCallOptions = {}) {
     super();
     this.userAgent = userAgent;
@@ -43,12 +64,12 @@ export class TelnyxCall extends EventEmitter {
     this._callType = 'outgoing';
     this.attachSession(inviter);
     this._status = 'initiating';
-    this.trigger('connecting');
+    this.trigger(CallEvent.Connecting);
     try {
       await inviter.invite();
     } catch (error) {
       this._status = 'ended';
-      this.trigger('failed', error);
+      this.trigger(CallEvent.Failed, error);
       throw error;
     }
   }
@@ -68,7 +89,7 @@ export class TelnyxCall extends EventEmitter {
       await session.accept({ sessionDescriptionHandlerOptions: this.buildSessionDescriptionHandlerOptions() });
     } catch (error) {
       this._status = 'ended';
-      this.trigger('failed', error);
+      this.trigger(CallEvent.Failed, error);
     }
   }
 
@@ -81,9 +102,9 @@ export class TelnyxCall extends EventEmitter {
     try {
       await session.reject();
       this._status = 'ended';
-      this.trigger('rejected');
+      this.trigger(CallEvent.Rejected);
     } catch (error) {
-      this.trigger('failed', error);
+      this.trigger(CallEvent.Failed, error);
     }
   }
 
@@ -98,12 +119,12 @@ export class TelnyxCall extends EventEmitter {
         await this.session.bye();
       }
     } catch (error) {
-      this.trigger('failed', error);
+      this.trigger(CallEvent.Failed, error);
     }
   }
 
-  shutdown(): void {
-    void this.userAgent.stop();
+  shutdown(): Promise<void> {
+    return this.userAgent.stop();
   }
 
   mute(isMute: boolean): void {
@@ -113,7 +134,7 @@ export class TelnyxCall extends EventEmitter {
       return;
     }
     handler.enableSenderTracks(!isMute);
-    this.trigger(isMute ? 'muted' : 'unmuted');
+    this.trigger(isMute ? CallEvent.Muted : CallEvent.Unmuted);
   }
 
   isMuted(): boolean {
@@ -130,10 +151,10 @@ export class TelnyxCall extends EventEmitter {
     }
     const success = handler.sendDtmf(digits);
     if (!success) {
-      this.trigger('failed', new Error('Failed to send DTMF'));
+      this.trigger(CallEvent.Failed, new Error('Failed to send DTMF'));
       return;
     }
-    this.trigger('dtmf', undefined, digits);
+    this.trigger(CallEvent.Dtmf, undefined, digits);
   }
 
   get request(): false {
@@ -171,16 +192,16 @@ export class TelnyxCall extends EventEmitter {
       onBye: () => this.handleTerminated(),
       onCancel: () => this.handleFailed('cancelled'),
       onInfo: (info: Info) => this.handleInfo(info),
-      onNotify: (notification) => this.trigger('notification', notification),
+      onNotify: (notification) => this.trigger(CallEvent.Notification, notification),
       onSessionDescriptionHandler: (handler) => this.attachRemoteMedia(handler as WebSessionDescriptionHandler),
     };
     session.stateChange.addListener((state) => {
       if (state === SessionState.Establishing) {
-        this.trigger('connecting');
+        this.trigger(CallEvent.Connecting);
       }
       if (state === SessionState.Established) {
         this._status = 'connected';
-        this.trigger('accepted');
+        this.trigger(CallEvent.Accepted);
         this.attachRemoteMedia();
       }
       if (state === SessionState.Terminated) {
@@ -193,12 +214,12 @@ export class TelnyxCall extends EventEmitter {
     if (this._status !== 'ended') {
       this._status = 'ended';
     }
-    this.trigger('terminated');
+    this.trigger(CallEvent.Terminated);
   }
 
   private handleFailed(reason: string): void {
     this._status = 'ended';
-    this.trigger('failed', reason);
+    this.trigger(CallEvent.Failed, reason);
   }
 
   private handleInfo(info: Info): void {
@@ -206,11 +227,11 @@ export class TelnyxCall extends EventEmitter {
     if (contentType && contentType.toLowerCase() === 'application/dtmf-relay' && typeof info.request.body === 'string') {
       const payload = this.parseDtmf(info.request.body);
       if (payload) {
-        this.trigger('dtmf', payload, payload.tone);
+        this.trigger(CallEvent.Dtmf, payload, payload.tone);
         return;
       }
     }
-    this.trigger('info', info);
+    this.trigger(CallEvent.Info, info);
   }
 
   private parseDtmf(body: string): DtmfPayload | undefined {
