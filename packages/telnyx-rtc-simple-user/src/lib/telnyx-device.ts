@@ -93,8 +93,6 @@ class TelnyxDevice extends EventEmitter {
     }
     this.registrarServer = config.registrarServer;
 
-    this._ensureConnectivityWithSipServer();
-
     const simpleUserOptions = this._buildSimpleUserOptions();
     this._simpleUser = new SimpleUser(this._resolveTransportServer(), simpleUserOptions);
   }
@@ -294,19 +292,6 @@ class TelnyxDevice extends EventEmitter {
     });
 
     return servers;
-  }
-
-  private _ensureConnectivityWithSipServer(): void {
-    try {
-      const xhr = new XMLHttpRequest();
-      xhr.addEventListener('error', () => {
-        console.info('Failed http connection to SIP server is expected. It is related to a chrome bug.');
-      });
-      xhr.open('GET', `https://${this.host}:${this.port}`, true);
-      xhr.send();
-    } catch (error) {
-      console.debug('Connectivity preflight failed', error);
-    }
   }
 }
 
