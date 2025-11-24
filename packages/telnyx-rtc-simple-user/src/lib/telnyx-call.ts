@@ -1,5 +1,6 @@
 import { SimpleUser } from 'sip.js/lib/platform/web/simple-user/simple-user.js';
 import EventEmitter from 'es6-event-emitter';
+import { CallEvent } from './constants';
 
 type CallStatus = 'starting' | 'initiating' | 'connected' | 'ended';
 type CallType = 'incoming' | 'outgoing' | '';
@@ -16,12 +17,12 @@ export class TelnyxCall extends EventEmitter {
   async makeCall(destination: string): Promise<void> {
     this._callType = 'outgoing';
     this._status = 'initiating';
-    this.trigger('connecting');
+    this.trigger(CallEvent.Connecting);
     try {
       await this.simpleUser.call(destination);
     } catch (error) {
       this._status = 'ended';
-      this.trigger('failed', error);
+      this.trigger(CallEvent.Failed, error);
       throw error;
     }
   }
@@ -40,7 +41,7 @@ export class TelnyxCall extends EventEmitter {
       await this.simpleUser.answer();
     } catch (error) {
       this._status = 'ended';
-      this.trigger('failed', error);
+      this.trigger(CallEvent.Failed, error);
     }
   }
 
@@ -52,9 +53,9 @@ export class TelnyxCall extends EventEmitter {
     try {
       await this.simpleUser.decline();
       this._status = 'ended';
-      this.trigger('rejected');
+      this.trigger(CallEvent.Rejected);
     } catch (error) {
-      this.trigger('failed', error);
+      this.trigger(CallEvent.Failed, error);
     }
   }
 
@@ -62,22 +63,22 @@ export class TelnyxCall extends EventEmitter {
     try {
       await this.simpleUser.hangup();
     } catch (error) {
-      this.trigger('failed', error);
+      this.trigger(CallEvent.Failed, error);
     }
   }
 
-  shutdown(): void {
-    void this.simpleUser.disconnect();
+  shutdown(): Promise<void> {
+    return this.simpleUser.disconnect();
   }
 
   mute(isMute: boolean): void {
     this._mute = isMute;
     if (isMute) {
       this.simpleUser.mute();
-      this.trigger('muted');
+      this.trigger(CallEvent.Muted);
     } else {
       this.simpleUser.unmute();
-      this.trigger('unmuted');
+      this.trigger(CallEvent.Unmuted);
     }
   }
 
@@ -91,39 +92,39 @@ export class TelnyxCall extends EventEmitter {
     }
     try {
       await this.simpleUser.sendDTMF(digits);
-      this.trigger('dtmf', undefined, digits);
+      this.trigger(CallEvent.Dtmf, undefined, digits);
     } catch (error) {
-      this.trigger('failed', error);
+      this.trigger(CallEvent.Failed, error);
     }
   }
 
   handleCallCreated(): void {
     if (this._status !== 'connected') {
       this._status = 'initiating';
-      this.trigger('connecting');
+      this.trigger(CallEvent.Connecting);
     }
   }
 
   handleCallAnswered(): void {
     this._status = 'connected';
-    this.trigger('accepted');
+    this.trigger(CallEvent.Accepted);
   }
 
   handleCallHangup(): void {
     this._status = 'ended';
-    this.trigger('terminated');
+    this.trigger(CallEvent.Terminated);
   }
 
   handleHoldChange(held: boolean): void {
-    this.trigger(held ? 'held' : 'resumed');
+    this.trigger(held ? CallEvent.Held : CallEvent.Resumed);
   }
 
   handleDtmf(tone: string, duration: number): void {
-    this.trigger('dtmf', { tone, duration }, tone);
+    this.trigger(CallEvent.Dtmf, { tone, duration }, tone);
   }
 
   handleNotification(notification: unknown): void {
-    this.trigger('notification', notification);
+    this.trigger(CallEvent.Notification, notification);
   }
 
   isInitiating(): boolean {

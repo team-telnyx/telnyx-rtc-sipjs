@@ -4,6 +4,7 @@ import type { SimpleUserOptions } from 'sip.js/lib/platform/web/simple-user/simp
 import type { SimpleUserDelegate } from 'sip.js/lib/platform/web/simple-user/simple-user-delegate.js';
 import EventEmitter from 'es6-event-emitter';
 import { TelnyxCall } from './telnyx-call';
+import { DeviceEvent } from './constants';
 
 export type LogLevel = 'debug' | 'log' | 'warn' | 'error' | 'off';
 
@@ -99,7 +100,7 @@ class TelnyxDevice extends EventEmitter {
 
   startWS(): Promise<void> {
     this._connectionAttempts += 1;
-    this.trigger('wsConnecting', { attempts: this._connectionAttempts });
+    this.trigger(DeviceEvent.WsConnecting, { attempts: this._connectionAttempts });
     return this._simpleUser.connect();
   }
 
@@ -111,23 +112,25 @@ class TelnyxDevice extends EventEmitter {
     return this._simpleUser.isConnected();
   }
 
-  register(options?: RegisterOptions): void {
-    this._simpleUser
+  register(options?: RegisterOptions): Promise<void> {
+    return this._simpleUser
       .register({
         requestOptions: options?.extraHeaders ? { extraHeaders: options.extraHeaders } : undefined,
       })
       .catch((error) => {
-        this.trigger('registrationFailed', { cause: error });
+        this.trigger(DeviceEvent.RegistrationFailed, { cause: error });
+        throw error;
       });
   }
 
-  unregister(options?: RegisterOptions): void {
-    this._simpleUser
+  unregister(options?: RegisterOptions): Promise<void> {
+    return this._simpleUser
       .unregister({
         requestOptions: options?.extraHeaders ? { extraHeaders: options.extraHeaders } : undefined,
       })
       .catch((error) => {
-        this.trigger('registrationFailed', { cause: error });
+        this.trigger(DeviceEvent.RegistrationFailed, { cause: error });
+        throw error;
       });
   }
 
@@ -191,21 +194,21 @@ class TelnyxDevice extends EventEmitter {
     return {
       onServerConnect: () => {
         this._connectionAttempts = 0;
-        this.trigger('wsConnected');
+        this.trigger(DeviceEvent.WsConnected);
       },
       onServerDisconnect: () => {
-        this.trigger('wsDisconnected');
+        this.trigger(DeviceEvent.WsDisconnected);
       },
       onRegistered: () => {
         this._isRegistered = true;
-        this.trigger('registered');
+        this.trigger(DeviceEvent.Registered);
       },
       onUnregistered: () => {
         this._isRegistered = false;
-        this.trigger('unregistered', { cause: null, response: null });
+        this.trigger(DeviceEvent.Unregistered, { cause: null, response: null });
       },
       onMessageReceived: (message) => {
-        this.trigger('message', { body: message });
+        this.trigger(DeviceEvent.Message, { body: message });
       },
       onCallCreated: () => {
         if (!this._activeCall) {
@@ -234,7 +237,7 @@ class TelnyxDevice extends EventEmitter {
         } else {
           this._activeCall.markIncoming();
         }
-        this.trigger('incomingInvite', { activeCall: this._activeCall });
+        this.trigger(DeviceEvent.IncomingInvite, { activeCall: this._activeCall });
       },
     };
   }
