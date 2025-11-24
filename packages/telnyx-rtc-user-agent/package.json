@@ -25,7 +25,7 @@
     "types": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "watch": "webpack --watch --config ./webpack.config.dev.js",
-    "test": "echo 'No tests defined for @telnyx/rtc-sipjs-user-agent'",
+    "test": "jest",
     "prepare": "yarn build"
   },
   "license": "ISC",
@@ -37,7 +37,10 @@
     "@telnyx:registry": "https://registry.npmjs.org"
   },
   "devDependencies": {
+    "@types/jest": "^26.0.20",
+    "jest": "^26.6.3",
     "rimraf": "^5.0.5",
+    "ts-jest": "^26.5.4",
     "ts-loader": "^9.5.1",
     "typescript": "^5.4.5",
     "webpack": "^5.91.0",

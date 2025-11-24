@@ -5,7 +5,7 @@
   "description": "Telnyx SIP.js helpers monorepo",
   "scripts": {
     "build": "yarn workspaces foreach -pt run build",
-    "test": "yarn workspaces foreach -pt run test",
+    "test": "jest",
     "typecheck": "yarn workspaces foreach -pt run typecheck",
     "clean": "yarn workspaces foreach -pt run clean || true"
   },
@@ -17,6 +17,11 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/team-telnyx/telnyx-rtc-sipjs"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.20",
+    "jest": "^26.6.3",
+    "ts-jest": "^26.5.4"
   },
   "engines": {
     "node": ">=20.0.0"

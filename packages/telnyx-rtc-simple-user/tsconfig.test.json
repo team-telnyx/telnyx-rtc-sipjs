@@ -2,7 +2,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": false,
-    "types": ["jasmine", "node"]
+    "types": ["jest", "node"],
+    "typeRoots": ["./types", "./node_modules/@types", "../../node_modules/@types"]
   },
   "include": ["src/**/*.ts"]
 }
