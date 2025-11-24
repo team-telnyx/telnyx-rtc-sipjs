@@ -14,6 +14,26 @@ export class TelnyxCall extends EventEmitter {
     super();
   }
 
+  /**
+   * Register an event listener
+   * @param event - The event name to listen to
+   * @param handler - The callback function to execute when the event is triggered
+   * @returns The call instance for method chaining
+   */
+  public on(event: CallEvent | string, handler: (...args: any[]) => void): this {
+    return super.on(event, handler);
+  }
+
+  /**
+   * Remove an event listener
+   * @param event - The event name to stop listening to
+   * @param handler - The callback function to remove
+   * @returns The call instance for method chaining
+   */
+  public off(event: CallEvent | string, handler?: (...args: any[]) => void): this {
+    return super.off(event, handler);
+  }
+
   async makeCall(destination: string): Promise<void> {
     this._callType = 'outgoing';
     this._status = 'initiating';

@@ -60,6 +60,26 @@ class TelnyxDevice extends EventEmitter {
   private _connectionAttempts = 0;
   private _isRegistered = false;
 
+  /**
+   * Register an event listener
+   * @param event - The event name to listen to
+   * @param handler - The callback function to execute when the event is triggered
+   * @returns The device instance for method chaining
+   */
+  public on(event: DeviceEvent | string, handler: (...args: any[]) => void): this {
+    return super.on(event, handler);
+  }
+
+  /**
+   * Remove an event listener
+   * @param event - The event name to stop listening to
+   * @param handler - The callback function to remove
+   * @returns The device instance for method chaining
+   */
+  public off(event: DeviceEvent | string, handler?: (...args: any[]) => void): this {
+    return super.off(event, handler);
+  }
+
   constructor(config: TelnyxDeviceConfig) {
     super();
 
