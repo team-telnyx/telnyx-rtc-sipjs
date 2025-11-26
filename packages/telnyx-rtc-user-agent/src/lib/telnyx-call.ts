@@ -1,7 +1,16 @@
-import { Info, Invitation, Inviter, Session, SessionDescriptionHandlerOptions, SessionState, UserAgent } from 'sip.js';
-import type { SessionDescriptionHandler as WebSessionDescriptionHandler } from 'sip.js/lib/platform/web/session-description-handler/session-description-handler.js';
+import {
+  Info,
+  Invitation,
+  Inviter,
+  Session,
+  SessionDescriptionHandler,
+  SessionDescriptionHandlerOptions,
+  SessionState,
+  UserAgent,
+} from 'sip.js';
 import EventEmitter from 'es6-event-emitter';
 import { CallEvent } from './constants';
+import { SessionDescriptionHandler as WebSessionDescriptionHandler } from 'sip.js/lib/platform/web';
 
 export type CallStatus = 'starting' | 'initiating' | 'connected' | 'ended';
 export type CallType = 'incoming' | 'outgoing' | '';
@@ -193,7 +202,7 @@ export class TelnyxCall extends EventEmitter {
       onCancel: () => this.handleFailed('cancelled'),
       onInfo: (info: Info) => this.handleInfo(info),
       onNotify: (notification) => this.trigger(CallEvent.Notification, notification),
-      onSessionDescriptionHandler: (handler) => this.attachRemoteMedia(handler as WebSessionDescriptionHandler),
+      onSessionDescriptionHandler: (handler) => this.attachRemoteMedia(handler),
     };
     session.stateChange.addListener((state) => {
       if (state === SessionState.Establishing) {
@@ -253,9 +262,12 @@ export class TelnyxCall extends EventEmitter {
     };
   }
 
-  private attachRemoteMedia(handler?: WebSessionDescriptionHandler): void {
-    const session = this.session;
-    const resolvedHandler = handler ?? (session?.sessionDescriptionHandler as WebSessionDescriptionHandler | undefined);
+  private attachRemoteMedia(handler?: SessionDescriptionHandler): void {
+    const resolvedHandler = handler
+      ? handler instanceof WebSessionDescriptionHandler
+        ? handler
+        : undefined
+      : this.getWebSessionDescriptionHandler();
     if (!resolvedHandler) {
       return;
     }
@@ -280,6 +292,10 @@ export class TelnyxCall extends EventEmitter {
   }
 
   private getWebSessionDescriptionHandler(): WebSessionDescriptionHandler | undefined {
-    return this.session?.sessionDescriptionHandler as WebSessionDescriptionHandler | undefined;
+    const handler = this.session?.sessionDescriptionHandler;
+    if (handler instanceof WebSessionDescriptionHandler) {
+      return handler;
+    }
+    return undefined;
   }
 }
