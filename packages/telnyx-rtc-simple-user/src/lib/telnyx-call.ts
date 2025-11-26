@@ -1,6 +1,6 @@
-import { SimpleUser } from 'sip.js/lib/platform/web/simple-user/simple-user.js';
 import EventEmitter from 'es6-event-emitter';
 import { CallEvent } from './constants';
+import { SimpleUser } from 'sip.js/lib/platform/web';
 
 type CallStatus = 'starting' | 'initiating' | 'connected' | 'ended';
 type CallType = 'incoming' | 'outgoing' | '';
@@ -10,8 +10,11 @@ export class TelnyxCall extends EventEmitter {
   private _status: CallStatus = 'starting';
   private _callType: CallType = '';
 
-  constructor(private readonly simpleUser: SimpleUser) {
+  public readonly simpleUser: SimpleUser;
+
+  constructor(simpleUser: SimpleUser) {
     super();
+    this.simpleUser = simpleUser;
   }
 
   /**

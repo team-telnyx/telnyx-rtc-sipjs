@@ -1,7 +1,5 @@
 import { URI } from 'sip.js';
-import { SimpleUser } from 'sip.js/lib/platform/web/simple-user/simple-user.js';
-import type { SimpleUserOptions } from 'sip.js/lib/platform/web/simple-user/simple-user-options.js';
-import type { SimpleUserDelegate } from 'sip.js/lib/platform/web/simple-user/simple-user-delegate.js';
+import { SimpleUser, SimpleUserDelegate, SimpleUserOptions } from 'sip.js/lib/platform/web';
 import EventEmitter from 'es6-event-emitter';
 import { TelnyxCall } from './telnyx-call';
 import { DeviceEvent } from './constants';
