@@ -52,7 +52,7 @@ export class TelnyxCall extends EventEmitter {
    * @param handler - The callback function to execute when the event is triggered
    * @returns The call instance for method chaining
    */
-  public on(event: CallEvent | string, handler: (...args: unknown[]) => void): this {
+  public on(event: CallEvent | string, handler: (...args: any[]) => void): this {
     return super.on(event, handler);
   }
 
@@ -62,7 +62,7 @@ export class TelnyxCall extends EventEmitter {
    * @param handler - The callback function to remove
    * @returns The call instance for method chaining
    */
-  public off(event: CallEvent | string, handler?: (...args: unknown[]) => void): this {
+  public off(event: CallEvent | string, handler?: (...args: any[]) => void): this {
     return super.off(event, handler);
   }
 
