@@ -1,6 +1,6 @@
 {
   "name": "@telnyx/rtc-sipjs-user-agent",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Telnyx JavaScript WebRTC helpers backed by the SIP.js UserAgent API",
   "keywords": [
     "telnyx",
