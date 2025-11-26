@@ -136,7 +136,7 @@ export class TelnyxCall extends EventEmitter {
     return this.userAgent.stop();
   }
 
-  mute(isMute: boolean): void {
+  toggleMute(isMute: boolean): void {
     this._mute = isMute;
     const handler = this.getWebSessionDescriptionHandler();
     if (!handler) {

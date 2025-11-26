@@ -123,7 +123,7 @@ export class TelnyxCall extends EventEmitter {
     return this.simpleUser.disconnect();
   }
 
-  mute(isMute: boolean): void {
+  toggleMute(isMute: boolean): void {
     this._mute = isMute;
     if (isMute) {
       this.simpleUser.mute();
