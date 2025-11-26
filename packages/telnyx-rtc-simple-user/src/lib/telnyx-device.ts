@@ -64,7 +64,7 @@ class TelnyxDevice extends EventEmitter {
    * @param handler - The callback function to execute when the event is triggered
    * @returns The device instance for method chaining
    */
-  public on(event: DeviceEvent | string, handler: (...args: any[]) => void): this {
+  public on(event: DeviceEvent | string, handler: (...args: unknown[]) => void): this {
     return super.on(event, handler);
   }
 
@@ -74,7 +74,7 @@ class TelnyxDevice extends EventEmitter {
    * @param handler - The callback function to remove
    * @returns The device instance for method chaining
    */
-  public off(event: DeviceEvent | string, handler?: (...args: any[]) => void): this {
+  public off(event: DeviceEvent | string, handler?: (...args: unknown[]) => void): this {
     return super.off(event, handler);
   }
 

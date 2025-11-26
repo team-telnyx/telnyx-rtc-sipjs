@@ -139,6 +139,9 @@ device.on(DeviceEvent.RegistrationFailed, ({ cause }) => {
 | `telnyx.sipjs.resumed` | `CallEvent.Resumed` | None | Fired when the call is resumed from hold |
 | `telnyx.sipjs.dtmf` | `CallEvent.Dtmf` | `{ tone: string, duration: number }` or `undefined, digits: string` | Fired when DTMF tones are sent or received |
 | `telnyx.sipjs.notification` | `CallEvent.Notification` | `unknown` | Fired for other SIP notifications |
+| `telnyx.sipjs.stats` | `CallEvent.Stats` | `unknown` | Fired periodically with WebRTC statistics (see note below) |
+
+> **Note on WebRTC Stats:** The `CallEvent.Stats` event relies on accessing the underlying SIP.js session, which `SimpleUser` does not publicly expose. Stats collection may not work reliably in all scenarios. For full WebRTC stats support, use [`@telnyx/rtc-sipjs-user-agent`](https://www.npmjs.com/package/@telnyx/rtc-sipjs-user-agent) instead.
 
 **Example:**
 ```ts
@@ -174,6 +177,10 @@ call.on(CallEvent.Muted, () => {
 
 call.on(CallEvent.Dtmf, (data, digits) => {
   console.log('DTMF received:', data || digits);
+});
+
+call.on(CallEvent.Stats, (stats) => {
+  console.log('WebRTC stats:', stats);
 });
 ```
 

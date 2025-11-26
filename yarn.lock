@@ -701,6 +701,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@peermetrics/webrtc-stats@npm:^5.6.0":
+  version: 5.7.1
+  resolution: "@peermetrics/webrtc-stats@npm:5.7.1"
+  dependencies:
+    uuid: "npm:8.3.2"
+  checksum: 10c0/9db375245143e97e147088ba08b0bb8df58173831df71ef55e23eb009534559ab5ff4b54c810300cffd05184841b38a5032a5267895d19555f2fe20c57f43b6d
+  languageName: node
+  linkType: hard
+
 "@pkgjs/parseargs@npm:^0.11.0":
   version: 0.11.0
   resolution: "@pkgjs/parseargs@npm:0.11.0"
@@ -730,6 +739,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@telnyx/rtc-sipjs-simple-user@workspace:packages/telnyx-rtc-simple-user"
   dependencies:
+    "@peermetrics/webrtc-stats": "npm:^5.6.0"
     "@types/jest": "npm:^26.0.20"
     babel-runtime: "npm:^6.26.0"
     es6-event-emitter: "npm:^1.5.2"
@@ -6276,7 +6286,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:^8.3.0":
+"uuid@npm:8.3.2, uuid@npm:^8.3.0":
   version: 8.3.2
   resolution: "uuid@npm:8.3.2"
   bin:

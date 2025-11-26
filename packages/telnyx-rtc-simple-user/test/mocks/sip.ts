@@ -13,6 +13,7 @@ export interface SimpleUserDelegate {
 }
 
 export interface SimpleUserOptions {
+  aor?: string;
   delegate?: SimpleUserDelegate;
   media?: {
     constraints?: {
@@ -24,6 +25,8 @@ export interface SimpleUserOptions {
     };
   };
   userAgentOptions?: Record<string, unknown>;
+  registererOptions?: Record<string, unknown>;
+  reconnectionDelay?: number;
 }
 
 class URI {
@@ -43,6 +46,7 @@ class SimpleUser {
   public delegate?: SimpleUserDelegate;
   private connected = false;
   private muted = false;
+  public _session?: unknown;
 
   constructor(public server: string, options: SimpleUserOptions = {}) {
     this.delegate = options.delegate;

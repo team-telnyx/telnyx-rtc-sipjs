@@ -41,4 +41,7 @@ export enum CallEvent {
 
   // Other events
   Notification = 'telnyx.sipjs.notification',
+
+  // Stats events
+  Stats = 'telnyx.sipjs.stats',
 }
