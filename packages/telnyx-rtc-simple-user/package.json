@@ -1,6 +1,6 @@
 {
   "name": "@telnyx/rtc-sipjs-simple-user",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Telnyx JavaScript library for building WebRTC apps on top of SIP.js SimpleUser",
   "keywords": [
     "telnyx",
