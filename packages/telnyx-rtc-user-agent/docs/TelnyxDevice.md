@@ -1,15 +1,18 @@
 The `TelnyxDevice` client connects your application to the Telnyx SIP backend,
-enabling you to make outgoing calls and handle incoming calls using the SIP.js SimpleUser helper.
+enabling you to make outgoing calls and handle incoming calls using the SIP.js UserAgent API directly.
+
+This package provides low-level access to SIP.js sessions while maintaining the familiar
+Telnyx event wrapper. Use this package if you need full control over SIP.js behavior.
 
 **`Examples`**
 
 ```ts
-import { TelnyxDevice } from '@telnyx/rtc-sipjs-simple-user';
+import { TelnyxDevice } from '@telnyx/rtc-sipjs-user-agent';
 
 // Initialize the device
 const device = new TelnyxDevice({
   host: 'sip.telnyx.com',
-  port: '7443',
+  port: 7443,
   wsServers: 'wss://sip.telnyx.com:7443',
   username: 'your-sip-username',
   password: 'your-sip-password',
@@ -18,7 +21,7 @@ const device = new TelnyxDevice({
 
 // Connect to WebSocket and register
 await device.startWS();
-device.register();
+await device.register();
 
 // Listen for events
 device.on('telnyx.sipjs.registered', () => {
@@ -84,7 +87,7 @@ Basic configuration:
 ```ts
 const device = new TelnyxDevice({
   host: 'sip.telnyx.com',
-  port: '7443',
+  port: 7443,
   username: 'your-username',
   password: 'your-password',
 });
@@ -95,7 +98,7 @@ Full configuration with ICE servers and audio element:
 ```ts
 const device = new TelnyxDevice({
   host: 'sip.telnyx.com',
-  port: '7443',
+  port: 7443,
   wsServers: 'wss://sip.telnyx.com:7443',
   username: 'your-username',
   password: 'your-password',
@@ -108,6 +111,7 @@ const device = new TelnyxDevice({
   }],
   registrarServer: 'sip:sip.telnyx.com:7443',
   remoteAudioElement: document.getElementById('remoteAudio') as HTMLAudioElement,
+  traceSip: true,
   logLevel: 'debug',
 });
 ```
@@ -139,6 +143,17 @@ Configuration interface for TelnyxDevice.
 | `username` | `string` | No | TURN authentication username |
 | `password` | `string` | No | TURN authentication password |
 
+### Default ICE Servers
+
+If not specified, the following defaults are used:
+
+**STUN Servers:**
+- `stun:stun.telnyx.com:3478`
+- `stun:stun.l.google.com:19302`
+
+**TURN Servers:**
+- `turn:turn.telnyx.com:3478?transport=tcp` (with default credentials)
+
 ## Methods
 
 ### startWS
@@ -166,6 +181,7 @@ ___
 ▸ **stopWS**(): `Promise<void>`
 
 Stops the WebSocket connection to the SIP server.
+This also terminates any active calls.
 
 #### Returns
 
@@ -204,7 +220,7 @@ ___
 
 ### register
 
-▸ **register**(`options?`): `Promise<void>`
+▸ **register**(`options?`): `Promise<OutgoingRegisterRequest>`
 
 Registers the device with the SIP server to receive incoming calls.
 
@@ -217,7 +233,9 @@ Registers the device with the SIP server to receive incoming calls.
 
 #### Returns
 
-`Promise<void>`
+`Promise<OutgoingRegisterRequest>`
+
+The outgoing REGISTER request
 
 **`Examples`**
 
@@ -239,7 +257,7 @@ ___
 
 ### unregister
 
-▸ **unregister**(`options?`): `Promise<void>`
+▸ **unregister**(`options?`): `Promise<OutgoingRegisterRequest>`
 
 Unregisters the device from the SIP server.
 The device will no longer receive incoming calls.
@@ -253,7 +271,9 @@ The device will no longer receive incoming calls.
 
 #### Returns
 
-`Promise<void>`
+`Promise<OutgoingRegisterRequest>`
+
+The outgoing REGISTER request
 
 **`Examples`**
 
@@ -377,7 +397,7 @@ device.on('telnyx.sipjs.registered', () => {
 Using enum constants (recommended):
 
 ```ts
-import { DeviceEvent } from '@telnyx/rtc-sipjs-simple-user';
+import { DeviceEvent } from '@telnyx/rtc-sipjs-user-agent';
 
 device.on(DeviceEvent.Registered, () => {
   console.log('Registered!');
@@ -421,7 +441,7 @@ device.off('telnyx.sipjs.registered', handler);
 Both string event names and enum constants can be used. Using enum constants is recommended for type safety.
 
 ```ts
-import { DeviceEvent } from '@telnyx/rtc-sipjs-simple-user';
+import { DeviceEvent } from '@telnyx/rtc-sipjs-user-agent';
 ```
 
 | Event Name | Enum | Payload | Description |
@@ -431,9 +451,9 @@ import { DeviceEvent } from '@telnyx/rtc-sipjs-simple-user';
 | `telnyx.sipjs.wsDisconnected` | `DeviceEvent.WsDisconnected` | None | Fired when WebSocket connection is closed |
 | `telnyx.sipjs.registered` | `DeviceEvent.Registered` | None | Fired when successfully registered with SIP server |
 | `telnyx.sipjs.unregistered` | `DeviceEvent.Unregistered` | `{ cause: null, response: null }` | Fired when unregistered from SIP server |
-| `telnyx.sipjs.registrationFailed` | `DeviceEvent.RegistrationFailed` | `{ cause: Error }` | Fired when registration fails |
+| `telnyx.sipjs.registrationFailed` | `DeviceEvent.RegistrationFailed` | `{ cause: Error \| string }` | Fired when registration fails |
 | `telnyx.sipjs.incomingInvite` | `DeviceEvent.IncomingInvite` | `{ activeCall: TelnyxCall }` | Fired when receiving an incoming call |
-| `telnyx.sipjs.message` | `DeviceEvent.Message` | `{ body: string }` | Fired when receiving a SIP MESSAGE |
+| `telnyx.sipjs.message` | `DeviceEvent.Message` | `{ body: unknown }` | Fired when receiving a SIP MESSAGE |
 
 **`Examples`**
 
@@ -478,3 +498,24 @@ device.on(DeviceEvent.WsDisconnected, () => {
   console.log('WebSocket disconnected');
 });
 ```
+
+## Comparison with SimpleUser Package
+
+| Feature | `@telnyx/rtc-sipjs-user-agent` | `@telnyx/rtc-sipjs-simple-user` |
+|---------|--------------------------------|----------------------------------|
+| SIP.js API | UserAgent (low-level) | SimpleUser (high-level) |
+| Session access | Direct access via `TelnyxCall` | Limited (internal only) |
+| WebRTC stats | Full support | Limited |
+| SIP INFO events | Supported | Not supported |
+| Complexity | More control, more complex | Simpler, less control |
+
+Use `@telnyx/rtc-sipjs-user-agent` when you need:
+- Direct access to SIP.js sessions
+- Full WebRTC statistics collection
+- SIP INFO message handling
+- Custom session management
+
+Use `@telnyx/rtc-sipjs-simple-user` when you want:
+- A simpler API with less boilerplate
+- Standard calling functionality
+- Automatic media handling

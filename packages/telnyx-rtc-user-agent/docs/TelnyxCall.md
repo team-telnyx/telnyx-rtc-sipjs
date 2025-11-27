@@ -2,6 +2,9 @@ A `TelnyxCall` represents an audio call between your application and
 a remote caller. The call object is created whenever a new call is initiated,
 either by you (outbound) or by a remote caller (inbound).
 
+This package provides direct access to the underlying SIP.js session, giving you
+full control over call handling and WebRTC operations.
+
 **`Examples`**
 
 Making an outbound call:
@@ -36,10 +39,6 @@ device.on('telnyx.sipjs.incomingInvite', ({ activeCall }) => {
 
 ## Table of contents
 
-### Properties
-
-- [simpleUser](#simpleuser)
-
 ### Methods
 
 - [makeCall](#makecall)
@@ -56,24 +55,14 @@ device.on('telnyx.sipjs.incomingInvite', ({ activeCall }) => {
 - [isEnded](#isended)
 - [isIncoming](#isincoming)
 - [isOutgoing](#isoutgoing)
-- [getSession](#getsession)
-- [getPeerConnection](#getpeerconnection)
 - [on](#on)
 - [off](#off)
-
-## Properties
-
-### simpleUser
-
-" `readonly` **simpleUser**: `SimpleUser`
-
-The underlying SIP.js SimpleUser instance.
 
 ## Methods
 
 ### makeCall
 
-¸ **makeCall**(`destination`): `Promise<void>`
+â–¸ **makeCall**(`destination`): `Promise<void>`
 
 Initiates an outbound call to the specified destination.
 This is called internally by `TelnyxDevice.initiateCall()`.
@@ -88,11 +77,34 @@ This is called internally by `TelnyxDevice.initiateCall()`.
 
 `Promise<void>`
 
+**Throws**
+
+`TypeError` if the destination is not a valid SIP URI
+
+___
+
+### incomingCall
+
+â–¸ **incomingCall**(`invitation`): `void`
+
+Attaches an incoming SIP.js Invitation to this call.
+This is called internally by `TelnyxDevice` when handling incoming calls.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `invitation` | `Invitation` | The SIP.js Invitation object |
+
+#### Returns
+
+`void`
+
 ___
 
 ### accept
 
-¸ **accept**(): `Promise<void>`
+â–¸ **accept**(): `Promise<void>`
 
 Answers an incoming call.
 Only valid for incoming calls (`isIncoming() === true`).
@@ -113,7 +125,7 @@ ___
 
 ### reject
 
-¸ **reject**(): `Promise<void>`
+â–¸ **reject**(): `Promise<void>`
 
 Rejects an incoming call.
 Only valid for incoming calls (`isIncoming() === true`).
@@ -134,9 +146,12 @@ ___
 
 ### disconnect
 
-¸ **disconnect**(): `Promise<void>`
+â–¸ **disconnect**(): `Promise<void>`
 
 Ends the current call (hangup).
+
+For outbound calls that are still establishing, this cancels the call.
+For established calls, this sends a BYE request.
 
 #### Returns
 
@@ -153,9 +168,9 @@ ___
 
 ### shutdown
 
-¸ **shutdown**(): `Promise<void>`
+â–¸ **shutdown**(): `Promise<void>`
 
-Disconnects the underlying SimpleUser from the SIP server.
+Stops the underlying UserAgent, terminating all calls.
 
 #### Returns
 
@@ -165,7 +180,7 @@ ___
 
 ### toggleMute
 
-¸ **toggleMute**(`isMute`): `void`
+â–¸ **toggleMute**(`isMute`): `void`
 
 Mutes or unmutes the local audio.
 When muted, the remote party cannot hear you.
@@ -194,7 +209,7 @@ ___
 
 ### isMuted
 
-¸ **isMuted**(): `boolean`
+â–¸ **isMuted**(): `boolean`
 
 Returns the current mute state.
 
@@ -216,9 +231,11 @@ ___
 
 ### sendDigits
 
-¸ **sendDigits**(`digits`): `Promise<void>`
+â–¸ **sendDigits**(`digits`): `Promise<void>`
 
 Sends DTMF tones (dial pad digits) during a call.
+
+Uses the WebRTC DTMF sender for reliable tone transmission.
 
 #### Parameters
 
@@ -236,7 +253,7 @@ Sends DTMF tones (dial pad digits) during a call.
 // Send a single digit
 await call.sendDigits('1');
 
-// Send multiple digits
+// Send multiple digits (e.g., for IVR navigation)
 await call.sendDigits('1234#');
 ```
 
@@ -244,7 +261,7 @@ ___
 
 ### status
 
-¸ **status**(): `CallStatus`
+â–¸ **status**(): `CallStatus`
 
 Returns the current status of the call.
 
@@ -265,7 +282,7 @@ ___
 
 ### isInitiating
 
-¸ **isInitiating**(): `boolean`
+â–¸ **isInitiating**(): `boolean`
 
 Returns whether the call is currently being initiated (ringing).
 
@@ -279,7 +296,7 @@ ___
 
 ### isConnected
 
-¸ **isConnected**(): `boolean`
+â–¸ **isConnected**(): `boolean`
 
 Returns whether the call is currently connected (active).
 
@@ -301,7 +318,7 @@ ___
 
 ### isEnded
 
-¸ **isEnded**(): `boolean`
+â–¸ **isEnded**(): `boolean`
 
 Returns whether the call has ended.
 
@@ -315,7 +332,7 @@ ___
 
 ### isIncoming
 
-¸ **isIncoming**(): `boolean`
+â–¸ **isIncoming**(): `boolean`
 
 Returns whether this is an incoming call.
 
@@ -329,7 +346,7 @@ ___
 
 ### isOutgoing
 
-¸ **isOutgoing**(): `boolean`
+â–¸ **isOutgoing**(): `boolean`
 
 Returns whether this is an outgoing call.
 
@@ -341,45 +358,9 @@ Returns whether this is an outgoing call.
 
 ___
 
-### getSession
-
-¸ **getSession**(): `Session | undefined`
-
-Gets the underlying SIP.js Session if available.
-
-> **Note:** SimpleUser does not publicly expose the session, so this
-> method uses internal access. For reliable session access, consider
-> using `@telnyx/rtc-sipjs-user-agent` instead.
-
-#### Returns
-
-`Session | undefined`
-
-The SIP.js Session or `undefined`
-
-___
-
-### getPeerConnection
-
-¸ **getPeerConnection**(): `RTCPeerConnection | undefined`
-
-Gets the WebRTC peer connection from the active session.
-
-> **Note:** SimpleUser does not publicly expose the session, so this
-> method uses internal access. For reliable peer connection access,
-> consider using `@telnyx/rtc-sipjs-user-agent` instead.
-
-#### Returns
-
-`RTCPeerConnection | undefined`
-
-The RTCPeerConnection or `undefined`
-
-___
-
 ### on
 
-¸ **on**(`event`, `handler`): `this`
+â–¸ **on**(`event`, `handler`): `this`
 
 Attaches an event handler for a specific event type.
 
@@ -409,7 +390,7 @@ call.on('telnyx.sipjs.accepted', () => {
 Using enum constants (recommended):
 
 ```ts
-import { CallEvent } from '@telnyx/rtc-sipjs-simple-user';
+import { CallEvent } from '@telnyx/rtc-sipjs-user-agent';
 
 call.on(CallEvent.Accepted, () => {
   console.log('Call accepted!');
@@ -420,7 +401,7 @@ ___
 
 ### off
 
-¸ **off**(`event`, `handler?`): `this`
+â–¸ **off**(`event`, `handler?`): `this`
 
 Removes an event handler.
 If no handler is provided, all listeners for that event are removed.
@@ -443,7 +424,7 @@ The call instance for method chaining
 Both string event names and enum constants can be used. Using enum constants is recommended for type safety.
 
 ```ts
-import { CallEvent } from '@telnyx/rtc-sipjs-simple-user';
+import { CallEvent } from '@telnyx/rtc-sipjs-user-agent';
 ```
 
 | Event Name | Enum | Payload | Description |
@@ -451,20 +432,13 @@ import { CallEvent } from '@telnyx/rtc-sipjs-simple-user';
 | `telnyx.sipjs.connecting` | `CallEvent.Connecting` | None | Fired when the call is being established |
 | `telnyx.sipjs.accepted` | `CallEvent.Accepted` | None | Fired when the call is answered/accepted |
 | `telnyx.sipjs.terminated` | `CallEvent.Terminated` | None | Fired when the call ends |
-| `telnyx.sipjs.failed` | `CallEvent.Failed` | `Error` | Fired when a call operation fails |
+| `telnyx.sipjs.failed` | `CallEvent.Failed` | `Error \| string` | Fired when a call operation fails |
 | `telnyx.sipjs.rejected` | `CallEvent.Rejected` | None | Fired when an incoming call is rejected |
 | `telnyx.sipjs.muted` | `CallEvent.Muted` | None | Fired when the call is muted |
 | `telnyx.sipjs.unmuted` | `CallEvent.Unmuted` | None | Fired when the call is unmuted |
-| `telnyx.sipjs.held` | `CallEvent.Held` | None | Fired when the call is put on hold |
-| `telnyx.sipjs.resumed` | `CallEvent.Resumed` | None | Fired when the call is resumed from hold |
-| `telnyx.sipjs.dtmf` | `CallEvent.Dtmf` | `{ tone: string, duration: number }` or `undefined, digits: string` | Fired when DTMF tones are sent or received |
+| `telnyx.sipjs.dtmf` | `CallEvent.Dtmf` | `{ tone: string, duration?: number }` or `undefined, digits: string` | Fired when DTMF tones are sent or received |
+| `telnyx.sipjs.info` | `CallEvent.Info` | `Info` | Fired when a SIP INFO message is received |
 | `telnyx.sipjs.notification` | `CallEvent.Notification` | `unknown` | Fired for other SIP notifications |
-| `telnyx.sipjs.stats` | `CallEvent.Stats` | `unknown` | Fired periodically with WebRTC statistics |
-
-> **Note on WebRTC Stats:** The `CallEvent.Stats` event relies on accessing the underlying
-> SIP.js session, which `SimpleUser` does not publicly expose. Stats collection may not work
-> reliably in all scenarios. For full WebRTC stats support, use
-> [`@telnyx/rtc-sipjs-user-agent`](https://www.npmjs.com/package/@telnyx/rtc-sipjs-user-agent) instead.
 
 **`Examples`**
 
@@ -508,17 +482,18 @@ Handling DTMF:
 // Sending DTMF
 call.sendDigits('1234');
 
-// Receiving DTMF events
+// Receiving DTMF events (via SIP INFO)
 call.on(CallEvent.Dtmf, (data, digits) => {
   console.log('DTMF:', data || digits);
 });
 ```
 
-Collecting WebRTC stats:
+Handling SIP INFO messages:
 
 ```ts
-call.on(CallEvent.Stats, (stats) => {
-  console.log('WebRTC stats:', stats);
+call.on(CallEvent.Info, (info) => {
+  const contentType = info.request.getHeader('Content-Type');
+  console.log('Received SIP INFO:', contentType);
 });
 ```
 
@@ -534,7 +509,56 @@ The call progresses through the following states:
 | `ended` | Call has terminated |
 
 ```
-starting ’ initiating ’ connected ’ ended
-                    ˜              —
-                      ’ ended (failed/rejected)
+starting â†’ initiating â†’ connected â†’ ended
+                    â†˜              â†—
+                      â†’ ended (failed/rejected)
 ```
+
+## SIP.js Session Access
+
+Unlike the SimpleUser package, this package provides methods that work directly
+with the SIP.js Session object. The session is managed internally but its state
+changes are exposed through events.
+
+### Session State Mapping
+
+| SIP.js SessionState | TelnyxCall Event |
+|---------------------|------------------|
+| `Establishing` | `CallEvent.Connecting` |
+| `Established` | `CallEvent.Accepted` |
+| `Terminated` | `CallEvent.Terminated` |
+
+### Session Delegate Events
+
+The call automatically handles the following SIP.js session delegate callbacks:
+
+| Delegate Callback | TelnyxCall Event |
+|-------------------|------------------|
+| `onBye` | `CallEvent.Terminated` |
+| `onCancel` | `CallEvent.Failed` |
+| `onInfo` | `CallEvent.Info` (or `CallEvent.Dtmf` for DTMF relay) |
+| `onNotify` | `CallEvent.Notification` |
+
+## Audio Handling
+
+Remote audio is automatically attached to an HTML audio element. You can:
+
+1. **Provide your own element** via `TelnyxDeviceConfig.remoteAudioElement`:
+   ```ts
+   const device = new TelnyxDevice({
+     // ...
+     remoteAudioElement: document.getElementById('audio') as HTMLAudioElement,
+   });
+   ```
+
+2. **Let the library create one**: If no element is provided, one is automatically
+   created and appended to the document body with class `telnyx-rtc-sipjs-remote-audio`.
+
+## Comparison with SimpleUser Package
+
+| Feature | `@telnyx/rtc-sipjs-user-agent` | `@telnyx/rtc-sipjs-simple-user` |
+|---------|--------------------------------|----------------------------------|
+| SIP INFO handling | Full support via `CallEvent.Info` | Not supported |
+| DTMF relay parsing | Automatic | Not supported |
+| Session access | Internal (managed) | Internal (limited) |
+| Media constraints | Configurable per call | Configurable per call |
