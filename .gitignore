@@ -1,2 +1,17 @@
-node_modules
-dist
+# Yarn Berry
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+
+# Optional — if you use Zero-Installs, remove this one:
+.yarn/cache
+
+# Yarn state file
+.yarn/install-state.gz
+
+# Node
+node_modules/
+
+dist/

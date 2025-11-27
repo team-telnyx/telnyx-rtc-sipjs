@@ -1,0 +1,81 @@
+name: "Draft release"
+
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: "Package directory to draft from"
+        required: true
+        default: "telnyx-rtc-simple-user"
+      ref:
+        description: "Git ref (branch or tag) to draft from"
+        required: false
+        default: "main"
+      prerelease:
+        description: "Pre-release identifier"
+        required: false
+        default: "none"
+        type: choice
+        options:
+          - none
+          - alpha
+          - beta
+          - rc
+      increment:
+        description: "Version bump (only if prerelease is 'none')"
+        required: false
+        default: "patch"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+env:
+  PACKAGE_DIR: ${{ github.event.inputs.package || 'telnyx-rtc-simple-user' }}
+  PACKAGE_NAME: ${{ (github.event.inputs.package || 'telnyx-rtc-simple-user') == 'telnyx-rtc-user-agent' && '@telnyx/rtc-sipjs-user-agent' || '@telnyx/rtc-sipjs-simple-user' }}
+
+jobs:
+  build:
+    name: Draft release
+
+    runs-on: ubuntu-latest
+
+    env:
+      TARGET_REF: ${{ github.event.inputs.ref || 'main' }}
+      PRERELEASE_ARGS: ${{ github.event.inputs.prerelease && github.event.inputs.prerelease != 'none' && format(' --preRelease={0} --github.preRelease', github.event.inputs.prerelease) || '' }}
+      INCREMENT_ARG: ${{ github.event.inputs.prerelease && github.event.inputs.prerelease != 'none' && ' --increment=prerelease' || github.event.inputs.increment && format(' --increment={0}', github.event.inputs.increment) || '' }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_REF }}
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN }}
+      - name: Setup Git user
+        run: |
+          git config user.name TelnyxIntegrations
+          git config user.email integrations@telnyx.com
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+          registry-url: https://registry.npmjs.org/
+      - name: Install shared dependencies
+        run: yarn install --immutable
+      - name: Build package
+        working-directory: packages/${{ env.PACKAGE_DIR }}
+        run: yarn build
+      - name: Test
+        working-directory: packages/${{ env.PACKAGE_DIR }}
+        run: yarn test
+        env:
+          CI: true
+      - name: Create draft release
+        working-directory: packages/${{ env.PACKAGE_DIR }}
+        run: |
+          yarn release --ci --github.draft --no-npm.publish${{ env.INCREMENT_ARG }}${{ env.PRERELEASE_ARGS }}
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_CI_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

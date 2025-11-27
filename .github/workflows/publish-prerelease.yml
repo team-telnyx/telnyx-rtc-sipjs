@@ -1,0 +1,85 @@
+name: "@telnyx/rtc-sipjs Publish prerelease"
+
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: "Package directory to publish"
+        required: true
+        default: "telnyx-rtc-simple-user"
+        type: choice
+        options:
+          - telnyx-rtc-simple-user
+          - telnyx-rtc-user-agent
+      ref:
+        description: "Git ref (branch or tag) to checkout"
+        required: false
+        default: "main"
+      npm_dist_tag:
+        description: "NPM dist-tag to publish under (e.g. beta, alpha, next)"
+        required: true
+
+env:
+  PACKAGE_DIR: ${{ github.event.inputs.package || 'telnyx-rtc-simple-user' }}
+  PACKAGE_NAME: ${{ (github.event.inputs.package || 'telnyx-rtc-simple-user') == 'telnyx-rtc-user-agent' && '@telnyx/rtc-sipjs-user-agent' || '@telnyx/rtc-sipjs-simple-user' }}
+
+jobs:
+  publish:
+    name: Publish prerelease
+
+    runs-on: ubuntu-latest
+
+    env:
+      TARGET_REF: ${{ github.event.inputs.ref || github.ref || 'main' }}
+      NPM_DIST_TAG: ${{ github.event.inputs.npm_dist_tag }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_REF }}
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN }}
+      - name: Setup Git user
+        run: |
+          git config user.name TelnyxIntegrations
+          git config user.email integrations@telnyx.com
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+          registry-url: https://registry.npmjs.org/
+      - name: Prepare Yarn 4
+        run: |
+          corepack enable
+          corepack prepare yarn@4 --activate
+      - name: Install shared dependencies
+        run: yarn install --immutable
+      - name: Build package
+        working-directory: packages/${{ env.PACKAGE_DIR }}
+        run: yarn build
+      - name: Publish package
+        working-directory: packages/${{ env.PACKAGE_DIR }}
+        run: npm publish --access public --tag ${{ env.NPM_DIST_TAG }}
+        env:
+          CI: true
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_CI_TOKEN }}
+      - name: Describe release changes
+        id: release_notes
+        run: |
+          TITLE=$(git show -1 --format='%s' -s)
+          echo "title=${TITLE}" >> "$GITHUB_OUTPUT"
+          LOG=$(git log -n 20 --pretty=format:'%s' | grep -i -E '^(feat|fix|docs|refactor|chore)' || true)
+          if [ -z "$LOG" ]; then
+            LOG="See the CHANGELOG for release details."
+          fi
+          {
+            echo "notes<<EOF"
+            printf '%s\n' "${LOG}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+      - name: get-npm-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@master
+        with:
+          path: packages/${{ env.PACKAGE_DIR }}

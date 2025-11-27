@@ -1,0 +1,58 @@
+name: "Test packages"
+
+on:
+  pull_request:
+    branches:
+      - "*"
+    paths:
+      - "packages/telnyx-rtc-simple-user/**"
+      - "packages/telnyx-rtc-user-agent/**"
+      - "package.json"
+      - "yarn.lock"
+
+permissions:
+  contents: read
+
+jobs:
+  test-simple-user:
+    name: Test @telnyx/rtc-sipjs-simple-user
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+          cache-dependency-path: "yarn.lock"
+      - name: Prepare Yarn 4
+        run: corepack prepare yarn@4 --activate
+      - name: Install dependencies
+        run: yarn install --immutable
+      - name: Test package
+        env:
+          CI: true
+        run: yarn workspace @telnyx/rtc-sipjs-simple-user run test
+
+
+  test-user-agent:
+    name: Test @telnyx/rtc-sipjs-user-agent
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+          cache-dependency-path: "yarn.lock"
+      - name: Prepare Yarn 4
+        run: corepack prepare yarn@4 --activate
+      - name: Install dependencies
+        run: yarn install --immutable
+      - name: Test package
+        env:
+          CI: true
+        run: yarn workspace @telnyx/rtc-sipjs-user-agent run test

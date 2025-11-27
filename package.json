@@ -1,78 +1,30 @@
 {
-  "name": "@telnyx/rtc-sipjs",
-  "version": "1.3.6",
-  "description": "Telnyx JavaScript library for building WebRTC apps with SIP.js",
-  "keywords": [
-    "telnyx",
-    "webrtc",
-    "sip",
-    "sip.js",
-    "soft phone",
-    "voip"
-  ],
-  "main": "dist/telnyx-rtc-sipjs.js",
-  "files": [
-    "dist/"
-  ],
+  "name": "telnyx-rtc-sipjs",
+  "private": true,
+  "version": "2.0.0",
+  "description": "Telnyx SIP.js helpers monorepo",
   "scripts": {
-    "docs": "jsdoc2md src/lib/telnyx-device.js > docs/TelnyxDevice.md && jsdoc2md src/lib/telnyx-call.js > docs/TelnyxCall.md",
-    "clean": "rimraf dist/*",
-    "prebuild": "npm run clean",
-    "build": "webpack --config ./webpack.config.dev.js & webpack --config ./webpack.config.prod.js",
-    "watch": "webpack --watch",
-    "start": "npm run watch",
-    "test": "karma start",
-    "release": "telnyx-npm-release",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm run test && npm run release"
+    "build": "yarn workspaces foreach -pt run build",
+    "test": "jest",
+    "typecheck": "yarn workspaces foreach -pt run typecheck",
+    "clean": "yarn workspaces foreach -pt run clean || true"
   },
-  "contributors": [
-    {
-      "name": "Jason Brackins",
-      "email": "jasonb@telnyx.com",
-      "url": "https://telnyx.com"
-    },
-    {
-      "name": "Sua Yoo",
-      "email": "sua@telnyx.com",
-      "url": "https://telnyx.com"
-    }
-  ],
-  "license": "ISC",
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/team-telnyx/telnyx-rtc-sipjs"
   },
-  "publishConfig": {
-    "@telnyx:registry": "https://registry.npmjs.org"
-  },
   "devDependencies": {
-    "@babel/core": "^7.12.8",
-    "@babel/preset-env": "^7.12.7",
-    "babel-loader": "^8.2.1",
-    "babel-preset-es2015": "^6.24.1",
-    "core-js": "^3.7.0",
-    "es6-event-emitter": "^1.5.2",
-    "jasmine-core": "^2.99.1",
-    "jsdoc-to-markdown": "^6.0.1",
-    "json-loader": "^0.5.7",
-    "karma": "^5.2.3",
-    "karma-chrome-launcher": "^3.1.0",
-    "karma-jasmine": "^4.0.1",
-    "karma-sourcemap-loader": "^0.3.8",
-    "karma-webpack": "^4.0.2",
-    "phantomjs-polyfill": "0.0.2",
-    "rimraf": "^2.5.4",
-    "sip.js": "^0.7.7",
-    "source-map": "^0.7.3",
-    "webpack": "^4.44.2",
-    "webpack-cli": "^4.2.0"
-  },
-  "optionalDependencies": {
-    "@telnyx/release": "^0.5.1",
-    "@telnyx/rtc-mocks": "^1.0.3"
+    "@types/jest": "^26.0.20",
+    "jest": "^26.6.3",
+    "ts-jest": "^26.5.4"
   },
   "engines": {
-    "node": ">=4.0.0"
-  }
+    "node": ">=20.0.0"
+  },
+  "packageManager": "yarn@4.11.0"
 }

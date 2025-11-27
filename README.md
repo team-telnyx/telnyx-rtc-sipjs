@@ -1,94 +1,45 @@
-# Telnyx WebRTC SIP JavaScript library
+# Telnyx RTC SIP.js Monorepo
 
-![npm (scoped)](https://img.shields.io/npm/v/@telnyx/rtc-sipjs)
+This contains two packages built on SIP.js 0.21 so you can choose the helper that best matches your integration style:
 
-The Telnyx SIP-based WebRTC JS library powers up your web application with the ability to make and receive phone calls directly in the browser.
+> **Heads up:** the legacy [`@telnyx/rtc-sipjs`](https://www.npmjs.com/package/@telnyx/rtc-sipjs) publish is being split into these two packages. If you currently depend on `@telnyx/rtc-sipjs`, plan to migrate to the package that matches your integration before the split lands.
 
-Check out the library in action in [this web dialer demo](https://webrtc.telnyx.com/).
+- [`@telnyx/rtc-sipjs-simple-user`](packages/telnyx-rtc-simple-user/README.md) – retains the modern SimpleUser powered implementation of `TelnyxDevice`/`TelnyxCall`.
+- [`@telnyx/rtc-sipjs-user-agent`](packages/telnyx-rtc-user-agent/README.md) – restores a `UserAgent` driven device, the classic SIP.js API surface.
 
-_Looking for more WebRTC features, JSON-RPC support or need to quickly get spun up with a React app? Telnyx also has a robust [WebRTC SDK](https://github.com/team-telnyx/webrtc) available as a separate npm module._
+## Getting started
 
-## Installation
-
-Install this package with [npm](https://www.npmjs.com/):
-
-```shell
-$ npm install --save @telnyx/rtc-sipjs
+```bash
+yarn install
+yarn workspaces list
 ```
 
-or using [yarn](https://yarnpkg.com/lang/en/):
+Each workspace exposes the usual `build`, `test`, `typecheck`, and `clean` scripts. You can target a specific package with `yarn workspace <name> <script>` or run every package in parallel:
 
-```shell
-$ yarn add @telnyx/rtc-sipjs
+```bash
+yarn build
 ```
 
-## Usage
+## Running tests
 
-Import [TelnyxDevice](https://github.com/team-telnyx/telnyx-rtc-sipjs/blob/master/docs/TelnyxDevice.md) in the module where you need it.
+This repo pins Yarn 4 via the `packageManager` field, so make sure Corepack is enabled (once per machine) before installing dependencies:
 
-```javascript
-import { TelnyxDevice } from '@telnyx/rtc-sipjs';
+```bash
+corepack enable
+yarn install
 ```
 
-### Example config and initiation
+From there you can run every package's tests at once:
 
-```javascript
-let config = {
-  host: 'sip.telnyx.com',
-  port: '7443',
-  wsServers: 'wss://sip.telnyx.com:7443',
-  displayName: 'Phone User',
-  username: 'testuser',
-  password: 'testuserPassword',
-  stunServers: 'stun:stun.telnyx.com:3478',
-  turnServers: {
-    urls: ['turn:turn.telnyx.com:3478?transport=tcp'],
-    username: 'turnuser',
-    password: 'turnpassword',
-  },
-  registrarServer: 'sip:sip.telnyx.com:7443',
-};
-
-let device = new TelnyxDevice(config);
+```bash
+yarn test
 ```
 
-### Example phone call
+Or you can focus on a single workspace:
 
-```javascript
-let activeCall = device.initiateCall('1235556789');
-
-activeCall.on('connecting', () => {
-  console.log("it's connecting!");
-});
-activeCall.on('accepted', () => {
-  console.log("We're on a phone call!");
-});
+```bash
+yarn workspace @telnyx/rtc-sipjs-simple-user run test
+yarn workspace @telnyx/rtc-sipjs-user-agent run test
 ```
 
-See the [TelnyxDevice](https://github.com/team-telnyx/telnyx-rtc-sipjs/blob/master/docs/TelnyxDevice.md) and [TelnyxCall](https://github.com/team-telnyx/telnyx-rtc-sipjs/blob/master/docs/TelnyxCall.md) for more details.
-
-## Development
-
-### Building the package
-
-When working on the package directly, please use [yarn](https://github.com/yarnpkg/yarn) instead of npm.
-
-```shell
-$ yarn build
-# Or to watch for changes to files:
-$ yarn start
-```
-
-### Running tests
-
-```shell
-$ yarn test
-```
-
-### Generating Docs
-
-We use [jsdoc-to-markdown](https://github.com/jsdoc2md/jsdoc-to-markdown) to generate GitHub friendly docs.
-
-```shell
-$ yarn docs
-```
+Refer to the README inside each package for detailed usage instructions.
