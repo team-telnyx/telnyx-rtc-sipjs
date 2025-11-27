@@ -1,51 +1,98 @@
-#### 2.0.0
+# Changelog
 
-##### Breaking Changes
+This changelog tracks changes across the Telnyx RTC SIP.js monorepo.
 
-* **Core:** Rebuilt `TelnyxDevice`/`TelnyxCall` on top of SIP.js [`SimpleUser`](https://sipjs.com/guides/simple-user/) and converted the library to TypeScript. The legacy SIP.js UA wrapper has been removed, so applications must adopt the SimpleUser-backed event surface exposed by the library.
-* **Repo:** Converted the project into a Yarn workspace monorepo that publishes `@telnyx/rtc-sipjs-simple-user` and `@telnyx/rtc-sipjs-user-agent`.
+---
+
+## Packages
+
+### @telnyx/rtc-sipjs-simple-user
+
+#### 0.0.8
+
+##### Documentation Changes
+
+* **docs:** Added comprehensive API documentation following the webrtc SDK documentation format:
+  * Updated `TelnyxDevice.md` with full API reference, configuration options (`TelnyxDeviceConfig`, `TurnServerConfig`), events, and usage examples.
+  * Created `TelnyxCall.md` with full API reference, methods, events with enum constants, and call state diagrams.
+* **docs:** Added comparison tables between `@telnyx/rtc-sipjs-simple-user` and `@telnyx/rtc-sipjs-user-agent` to help users choose the right package.
+
+#### 0.0.7
 
 ##### New Features
 
 * **TelnyxDevice:** Accept an optional `remoteAudioElement` so the remote media stream can be auto-attached by the library when calls connect.
-* **TelnyxDevice:** Support passing SIP headers via `register({ extraHeaders })` and `unregister({ extraHeaders })` to meet environments that require custom metadata on REGISTER traffic.
+* **TelnyxDevice:** Support passing SIP headers via `register({ extraHeaders })` and `unregister({ extraHeaders })`.
 * **TelnyxDevice:** Default STUN/TURN servers to the same configuration used by [`@telnyx/webrtc`](https://github.com/team-telnyx/webrtc).
-* **TelnyxDevice/TelnyxCall:** Typed `on()` and `off()` event listener methods with proper TypeScript signatures for type-safe event handling.
+* **TelnyxDevice/TelnyxCall:** Typed `on()` and `off()` event listener methods with proper TypeScript signatures.
 * **Constants:** New `DeviceEvent` and `CallEvent` enums for type-safe event subscription.
-* **UserAgent Package:** Restored the classic SIP.js `UserAgent` powered implementation—now sharing the SIP.js 0.21 dependency—to allow incremental migrations.
-
-##### SimpleUser Package (`@telnyx/rtc-sipjs-simple-user`)
-
-* **TelnyxCall:** WebRTC stats collection via `@peermetrics/webrtc-stats` with `Stats` event emission for call quality monitoring.
+* **TelnyxCall:** WebRTC stats collection via `@peermetrics/webrtc-stats` with `Stats` event emission.
 * **TelnyxCall:** `getSession()` and `getPeerConnection()` methods to access the underlying SIP.js session and WebRTC peer connection.
 * **TelnyxCall:** `Held` and `Resumed` events for call hold state changes.
 
-##### UserAgent Package (`@telnyx/rtc-sipjs-user-agent`)
+##### Breaking Changes
 
+* **Core:** Rebuilt `TelnyxDevice`/`TelnyxCall` on top of SIP.js [`SimpleUser`](https://sipjs.com/guides/simple-user/) and converted the library to TypeScript.
+
+##### Dependency Updates
+
+* **sip.js:** Upgrade to 0.21.2 to pick up the SimpleUser helper and modern WebRTC fixes.
+* **@peermetrics/webrtc-stats:** Added for WebRTC stats collection.
+
+---
+
+### @telnyx/rtc-sipjs-user-agent
+
+#### 0.0.3
+
+##### Documentation Changes
+
+* **docs:** Added comprehensive API documentation following the webrtc SDK documentation format:
+  * Created `TelnyxDevice.md` with full API reference, configuration options, events, and usage examples.
+  * Created `TelnyxCall.md` with full API reference, methods, events with enum constants, session state mapping, and audio handling documentation.
+* **docs:** Added comparison tables between packages.
+
+#### 0.0.2
+
+##### New Features
+
+* **TelnyxDevice:** Accept an optional `remoteAudioElement` so the remote media stream can be auto-attached by the library when calls connect.
+* **TelnyxDevice:** Support passing SIP headers via `register({ extraHeaders })` and `unregister({ extraHeaders })`.
+* **TelnyxDevice:** Default STUN/TURN servers to the same configuration used by [`@telnyx/webrtc`](https://github.com/team-telnyx/webrtc).
+* **TelnyxDevice:** `traceSip` option properly passed to SIP.js transport options for SIP message tracing.
+* **TelnyxDevice/TelnyxCall:** Typed `on()` and `off()` event listener methods with proper TypeScript signatures.
+* **Constants:** New `DeviceEvent` and `CallEvent` enums for type-safe event subscription.
 * **TelnyxCall:** Full access to the underlying SIP.js `Session` object for advanced use cases.
 * **TelnyxCall:** `Info` event for handling SIP INFO messages.
 * **TelnyxCall:** DTMF parsing from SIP INFO messages (`application/dtmf-relay` content type).
 * **TelnyxCall:** Auto-creation of audio element in the DOM when `remoteAudioElement` is not provided.
-* **TelnyxDevice:** `traceSip` option properly passed to SIP.js transport options for SIP message tracing.
 
-##### Package Differences
+##### Breaking Changes
+
+* **Core:** Built `TelnyxDevice`/`TelnyxCall` on top of SIP.js [`UserAgent`](https://sipjs.com/api/classes/api_useragent.UserAgent.html) with TypeScript.
+
+##### Dependency Updates
+
+* **sip.js:** Uses 0.21.2 for modern WebRTC fixes.
+
+---
+
+## Package Comparison
 
 | Feature | `@telnyx/rtc-sipjs-simple-user` | `@telnyx/rtc-sipjs-user-agent` |
 |---------|--------------------------------|-------------------------------|
+| SIP.js API | SimpleUser (high-level) | UserAgent (low-level) |
 | Built-in WebRTC stats | Yes (`Stats` event) | No |
 | Hold events | Yes (`Held`/`Resumed`) | No |
 | SIP INFO handling | No | Yes (`Info` event) |
 | Direct session access | Limited (via `getSession()`) | Full |
 | Auto-create audio element | No | Yes |
 
-##### Dependency Updates
+---
 
-* **sip.js:** Upgrade to 0.21.2 to pick up the SimpleUser helper and modern WebRTC fixes.
-* **@peermetrics/webrtc-stats:** Added for WebRTC stats collection in the SimpleUser package.
+## Legacy Releases (pre-monorepo)
 
-##### Documentation Changes
-
-* **README/docs:** Document the SimpleUser-based architecture, the new `remoteAudioElement` option, the workspace layout, and the shared Telnyx ICE server defaults.
+The versions below refer to the original `@telnyx/rtc-sipjs` package before the monorepo split.
 
 #### 1.3.6 (2017-5-19)
 
