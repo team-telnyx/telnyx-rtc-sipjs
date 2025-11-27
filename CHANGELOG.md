@@ -10,11 +10,38 @@
 * **TelnyxDevice:** Accept an optional `remoteAudioElement` so the remote media stream can be auto-attached by the library when calls connect.
 * **TelnyxDevice:** Support passing SIP headers via `register({ extraHeaders })` and `unregister({ extraHeaders })` to meet environments that require custom metadata on REGISTER traffic.
 * **TelnyxDevice:** Default STUN/TURN servers to the same configuration used by [`@telnyx/webrtc`](https://github.com/team-telnyx/webrtc).
+* **TelnyxDevice/TelnyxCall:** Typed `on()` and `off()` event listener methods with proper TypeScript signatures for type-safe event handling.
+* **Constants:** New `DeviceEvent` and `CallEvent` enums for type-safe event subscription.
 * **UserAgent Package:** Restored the classic SIP.js `UserAgent` powered implementation—now sharing the SIP.js 0.21 dependency—to allow incremental migrations.
+
+##### SimpleUser Package (`@telnyx/rtc-sipjs-simple-user`)
+
+* **TelnyxCall:** WebRTC stats collection via `@peermetrics/webrtc-stats` with `Stats` event emission for call quality monitoring.
+* **TelnyxCall:** `getSession()` and `getPeerConnection()` methods to access the underlying SIP.js session and WebRTC peer connection.
+* **TelnyxCall:** `Held` and `Resumed` events for call hold state changes.
+
+##### UserAgent Package (`@telnyx/rtc-sipjs-user-agent`)
+
+* **TelnyxCall:** Full access to the underlying SIP.js `Session` object for advanced use cases.
+* **TelnyxCall:** `Info` event for handling SIP INFO messages.
+* **TelnyxCall:** DTMF parsing from SIP INFO messages (`application/dtmf-relay` content type).
+* **TelnyxCall:** Auto-creation of audio element in the DOM when `remoteAudioElement` is not provided.
+* **TelnyxDevice:** `traceSip` option properly passed to SIP.js transport options for SIP message tracing.
+
+##### Package Differences
+
+| Feature | `@telnyx/rtc-sipjs-simple-user` | `@telnyx/rtc-sipjs-user-agent` |
+|---------|--------------------------------|-------------------------------|
+| Built-in WebRTC stats | Yes (`Stats` event) | No |
+| Hold events | Yes (`Held`/`Resumed`) | No |
+| SIP INFO handling | No | Yes (`Info` event) |
+| Direct session access | Limited (via `getSession()`) | Full |
+| Auto-create audio element | No | Yes |
 
 ##### Dependency Updates
 
 * **sip.js:** Upgrade to 0.21.2 to pick up the SimpleUser helper and modern WebRTC fixes.
+* **@peermetrics/webrtc-stats:** Added for WebRTC stats collection in the SimpleUser package.
 
 ##### Documentation Changes
 
