@@ -11,6 +11,7 @@ import {
 import EventEmitter from 'es6-event-emitter';
 import { CallEvent } from './constants';
 import { SessionDescriptionHandler as WebSessionDescriptionHandler } from 'sip.js/lib/platform/web';
+import { addRtcpMuxModifier } from './telnyx-device';
 
 export type CallStatus = 'starting' | 'initiating' | 'connected' | 'ended';
 export type CallType = 'incoming' | 'outgoing' | '';
@@ -69,6 +70,7 @@ export class TelnyxCall extends EventEmitter {
     }
     const inviter = new Inviter(this.userAgent, target, {
       sessionDescriptionHandlerOptions: this.buildSessionDescriptionHandlerOptions(),
+      sessionDescriptionHandlerModifiers: [addRtcpMuxModifier],
     });
     this._callType = 'outgoing';
     this.attachSession(inviter);
@@ -95,7 +97,10 @@ export class TelnyxCall extends EventEmitter {
       return;
     }
     try {
-      await session.accept({ sessionDescriptionHandlerOptions: this.buildSessionDescriptionHandlerOptions() });
+      await session.accept({
+        sessionDescriptionHandlerOptions: this.buildSessionDescriptionHandlerOptions(),
+        sessionDescriptionHandlerModifiers: [addRtcpMuxModifier],
+      });
     } catch (error) {
       this._status = 'ended';
       this.trigger(CallEvent.Failed, error);

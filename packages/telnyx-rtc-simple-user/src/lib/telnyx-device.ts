@@ -1,8 +1,88 @@
 import { URI } from 'sip.js';
+import { UserAgentCore } from 'sip.js/lib/core';
 import { SimpleUser, SimpleUserDelegate, SimpleUserOptions } from 'sip.js/lib/platform/web';
 import EventEmitter from 'es6-event-emitter';
 import { TelnyxCall } from './telnyx-call';
 import { DeviceEvent } from './constants';
+
+/**
+ * SDP modifier that injects a=rtcp-mux attribute into remote SDP.
+ *
+ * Modern browsers require rtcpMuxPolicy: "require" by default, but some
+ * SIP servers (including Telnyx) may not include a=rtcp-mux in their SDP.
+ * This modifier ensures compatibility by adding the attribute when missing.
+ */
+function addRtcpMuxModifier(description: RTCSessionDescriptionInit): Promise<RTCSessionDescriptionInit> {
+  if (description.sdp && !description.sdp.includes('a=rtcp-mux')) {
+    console.log('[TelnyxDevice] Adding a=rtcp-mux to SDP');
+    description.sdp = description.sdp
+      .replace(/(m=audio[^\r\n]*)/g, '$1\r\na=rtcp-mux')
+      .replace(/(m=video[^\r\n]*)/g, '$1\r\na=rtcp-mux');
+  }
+  return Promise.resolve(description);
+}
+
+/**
+ * Patches SIP.js UserAgentCore to accept incoming requests regardless of Request-URI.
+ *
+ * By default, SIP.js validates that incoming INVITE Request-URI matches the
+ * registered AOR (Address of Record). However, Telnyx routes calls to phone
+ * numbers (e.g., sip:14843068733@...) while the client registers with a username
+ * (e.g., sip:sipjsproject@...). This mismatch causes 404 rejection per RFC 3261.
+ *
+ * This patch bypasses that validation to allow Telnyx-style call routing.
+ */
+let userAgentCorePatched = false;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type UserAgentCoreType = typeof UserAgentCore & { prototype: any };
+
+function patchUserAgentCoreForTelnyx(): void {
+  if (userAgentCorePatched) {
+    return;
+  }
+
+  try {
+    const CoreClass = UserAgentCore as UserAgentCoreType;
+
+    if (!CoreClass || !CoreClass.prototype) {
+      console.warn('[TelnyxDevice] Unable to patch UserAgentCore: class not found');
+      return;
+    }
+
+    const originalReceiveRequest = CoreClass.prototype.receiveRequest;
+
+    CoreClass.prototype.receiveRequest = function (message: unknown) {
+      // Store original configuration temporarily
+      const originalAor = this.configuration.aor;
+
+      // For incoming INVITE requests, temporarily set AOR to match the Request-URI
+      // This bypasses the "Request-URI does not point to us" validation
+      const msg = message as { method?: string; ruri?: { user?: string }; };
+      if (msg.method === 'INVITE' && msg.ruri?.user) {
+        const ruriUser = msg.ruri.user;
+        console.log('[TelnyxDevice] Accepting incoming INVITE for:', ruriUser);
+
+        // Temporarily modify AOR to match the incoming Request-URI
+        if (this.configuration.aor && typeof this.configuration.aor === 'object') {
+          this.configuration.aor = { ...this.configuration.aor, user: ruriUser };
+        }
+      }
+
+      try {
+        return originalReceiveRequest.call(this, message);
+      } finally {
+        // Restore original AOR
+        this.configuration.aor = originalAor;
+      }
+    };
+
+    userAgentCorePatched = true;
+    console.log('[TelnyxDevice] UserAgentCore patched for Telnyx compatibility');
+  } catch (error) {
+    console.warn('[TelnyxDevice] Failed to patch UserAgentCore:', error);
+  }
+}
 
 export type LogLevel = 'debug' | 'log' | 'warn' | 'error' | 'off';
 
@@ -90,6 +170,9 @@ class TelnyxDevice extends EventEmitter {
     if (!config.port) {
       throw new TypeError("TelnyxDevice: Missing 'port' parameter");
     }
+
+    // Apply SIP.js core patch for Telnyx compatibility
+    patchUserAgentCoreForTelnyx();
 
     this.config = config;
     this.host = config.host;
@@ -195,6 +278,8 @@ class TelnyxDevice extends EventEmitter {
       },
       registererOptions: this._buildRegistererOptions(),
       reconnectionDelay: undefined,
+      // Add RTCP-MUX modifier for Telnyx SDP compatibility
+      sessionDescriptionHandlerModifiersAddition: [addRtcpMuxModifier],
     };
 
     return options;
